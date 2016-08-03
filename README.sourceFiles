@@ -18,6 +18,4 @@ table_kernel.c table_kernel.h:
 	Responsible for the engine of the table handler.
 
 table_op.c table_op.h:
-	Ideally, the sole purpose of these files should be to manage the interaction between 'shell.c' and 'table_kernel.c'.
-	The reason is the difference between the type of input received by "shell.c", which is strings (char *),
-		and the type of output given by "shell.c" to "table_op.c", which depends on the FIELD_TYPE of each filed of a given table.
+	Provides to "shell.c" high-level operations regarding tables.

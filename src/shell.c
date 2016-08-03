@@ -43,38 +43,6 @@ typedef enum {
 	FAILURE
 } TABLE_OP;
 
-void create_table(char **s){
-	int index = 0, dataSize, size = strlen(s[2]);;
-	char **m;
-	TABLE *table = table_create(s[1]);
-	FIELD_TYPE type;
-
-	do{
-		m = match(s[2]+index, "^\\s*(\\w+)\\s+(\\w+)\\s*\\[{0,1}\\s*([[:digit:]]*)\\s*\\]{0,1}\\s*[,]{0,1}", 4);
-		if(!m) break;
-		
-		type = strcmp(m[2], "int") == 0 ? INT :
-			strcmp(m[2], "float") == 0 ? FLOAT :
-			strcmp(m[2], "double") == 0 ? DOUBLE :
-			strcmp(m[2], "char") == 0 ? strlen(m[3]) == 0 ? CHAR : STRING :
-			-1;
-
-		dataSize = type == STRING ? atoi(m[3])+1 :
-			   type == CHAR ? sizeof(char) :
-			   type == INT ? sizeof(int) :
-			   type == FLOAT ? sizeof(float) :
-			   type == DOUBLE ? sizeof(double) : -1;
-
-		table_add_field(table, m[1], type, dataSize); 
-		
-		index += strlen(m[0]);
-		matrix_free((void **) m, 4);
-	} while(index < size);
-
-	table_to_file(table);
-	table_destroy(&table);
-}
-
 //Given a string with multiple substrings separated by commas, return an array of these substrings.
 //For our convenience:
 //	- trailing and leading 'white' characters are ignored.
@@ -175,7 +143,7 @@ void shell(FILE *stream) {
 		switch(parse(cmd, &s)){
 			case CREATE_TABLE:
 				printf("CREATE_TABLE\n");
-				create_table(s);
+				shell_table_create(s[1], s[2]);
 				size = 3;
 				break;
 			

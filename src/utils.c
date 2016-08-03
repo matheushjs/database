@@ -59,6 +59,7 @@ char *read_line(FILE *stream) {
 }
 
 void matrix_free(void **m, int row){
+	if(!m) return;
 	for(; row; free(m[--row]));
 	free(m);
 }

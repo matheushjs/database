@@ -3,12 +3,13 @@
 #include <string.h>
 #include <utils.h>
 #include <table_kernel.h>
+#include <myregex.h>
 #include <globals.h>
 
 #include <assert.h> //For debugging
 
 //Creates a table without any fields
-TABLE *table_create(char *name){
+TABLE *table_alloc(char *name){
 	TABLE *table = (TABLE *) calloc(sizeof(TABLE), 1);
 	int size = strlen(name) + 1;
 	assert(size <= MAX_NAME_SIZE);	
@@ -74,12 +75,21 @@ void table_to_file(TABLE *table){
 	fclose(fp);
 }
 
+void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types, int *sizes){
+	int i;
+	TABLE *table = table_alloc(tablename);
+	for(i = 0; i < nfields; i++)
+		table_add_field(table, names[i], types[i], sizes[i]);
+	table_to_file(table);
+	table_destroy(&table);
+}
+
 //Loads a table from a .dat file
 TABLE *table_from_file(char *tablename){
 	FILE *fp;
 	char *filename;
 	int i;
-	TABLE *table = table_create(tablename);
+	TABLE *table = table_alloc(tablename);
 	TABLE_FIELD *field;
 
 	//Appends ".dat" to tablename into a new variable
@@ -436,4 +446,42 @@ void allindexes_print(){
 		printf("\tFieldname: %s\n", string);
 	}
 	fclose(fp);
+}
+
+void shell_table_create(char *tablename, char *params){
+	char **m, **fieldNames = NULL;
+	FIELD_TYPE type, *fieldTypes = NULL;
+	int index = 0, nfields = 0, *dataSizes = NULL, size = strlen(params);
+
+	do{
+		m = match(params+index, "^\\s*(\\w+)\\s+(\\w+)\\s*\\[{0,1}\\s*([[:digit:]]*)\\s*\\]{0,1}\\s*[,]{0,1}", 4);
+		if(!m) break;
+		
+		nfields++;
+		fieldNames = (char **) realloc(fieldNames, sizeof(char *) * nfields);
+		fieldTypes = (FIELD_TYPE *) realloc(fieldTypes, sizeof(FIELD_TYPE) * nfields);
+		dataSizes = (int *) realloc(dataSizes, sizeof(int) * nfields);
+		
+		type = 	strcmp(m[2], "int") == 0 ? INT :
+			strcmp(m[2], "float") == 0 ? FLOAT :
+			strcmp(m[2], "double") == 0 ? DOUBLE :
+			strcmp(m[2], "char") == 0 ? strlen(m[3]) == 0 ? CHAR : STRING :
+			-1;
+		fieldTypes[nfields-1] = type;
+		dataSizes[nfields-1] = 	type == STRING ? atoi(m[3])+1 :
+			   		type == CHAR ? sizeof(char) :
+			   		type == INT ? sizeof(int) :
+			   		type == FLOAT ? sizeof(float) :
+					type == DOUBLE ? sizeof(double) : -1;
+		fieldNames[nfields-1] = strdup(m[1]);
+		
+		index += strlen(m[0]);
+		matrix_free((void **) m, 4);
+	} while(index < size);
+
+	table_create(tablename, nfields, fieldNames, fieldTypes, dataSizes);
+
+	matrix_free((void **) fieldNames, nfields);
+	free(fieldTypes);
+	free(dataSizes);
 }

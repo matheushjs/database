@@ -4,10 +4,11 @@
 #include <stdio.h>
 #include <globals.h>
 
-TABLE *table_create(char *name);
+TABLE *table_alloc(char *name);
 void table_destroy(TABLE **table);
 void table_add_field(TABLE *table, char *fieldname, FIELD_TYPE type, int dataSize);
 void table_to_file(TABLE *table);
+void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types, int *sizes);
 TABLE *table_from_file(char *tablename);
 TABLE_FIELD *field_from_file(char *tablename, char *fieldname);
 
@@ -21,5 +22,7 @@ void select_records(char *tablename, char *fieldname, char *value);
 
 void alltables_print();
 void allindexes_print();
+
+void shell_table_create(char *tablename, char *params);
 
 #endif
