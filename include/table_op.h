@@ -4,14 +4,6 @@
 #include <stdio.h>
 #include <globals.h>
 
-TABLE *table_alloc(char *name);
-void table_destroy(TABLE **table);
-void table_add_field(TABLE *table, char *fieldname, FIELD_TYPE type, int dataSize);
-void table_to_file(TABLE *table);
-void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types, int *sizes);
-TABLE *table_from_file(char *tablename);
-TABLE_FIELD *field_from_file(char *tablename, char *fieldname);
-
 void table_insert(char *tablename, char **fieldnames, char **values);
 void table_index(char *tablename, char *fieldname);
 void index_sort(char *tablename, char *fieldname);
