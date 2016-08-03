@@ -1,0 +1,40 @@
+create table person (name char[20], age double, gender char);
+
+insert into person (name, age, gender) values (Matheus, 1, M);
+insert into person (name, age, gender) values (Joao, 21.32, M);
+insert into person (name, age, gender) values (Ricardo, 45.52, M);
+insert into person (name, age, gender) values (Matheus, 2, M);
+insert into person (name, age, gender) values (Matheus, 3, M);
+insert into person (name, age, gender) values (Alice, 4.66, F);
+insert into person (name, age, gender) values (Laura, 19.77, F);
+
+create index person(name);
+print table person;
+
+select person name Matheus;
+select person gender M;
+select person age 21.32;
+
+insert into person (name, age, gender) values (Carol, 25.32, F);
+insert into person (name, age, gender) values (Bia, 23.66, F);
+insert into person (name, age, gender) values (Matheus, 4, M);
+
+create index person(age);
+
+insert into person (name, age, gender) values (Matheus, 5, M);
+insert into person (name, age, gender) values (Fernanda, 37.73, F);
+insert into person (name, age, gender) values (Matheus, 6, M);
+insert into person (name, age, gender) values (Eduardo, 19.6, M);
+insert into person (name, age, gender) values (Matheus, 7, M);
+
+print table person;
+
+select person name Matheus;
+select person gender M;
+select person age 21.32;
+
+showalltables;
+showallindexes;
+statistics;
+
+quit;
