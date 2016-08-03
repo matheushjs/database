@@ -20,7 +20,7 @@
 //     value "20" to field "age"
 //     value "162" to field "ID"
 //Note the order in which the values were added to the table.
-void table_insert(char *tablename, char **fieldnames, char **values){
+void table_insert(char *tablename, char **fieldnames, void **values){
 	int i, j;
 	TABLE *table = table_from_file(tablename);
 	TABLE_FIELD *curr_field;
@@ -38,7 +38,7 @@ void table_insert(char *tablename, char **fieldnames, char **values){
 		curr_field = table->fields[i];
 		for(j = 0; j < table->fieldCounter; j++){
 			if(strcmp(curr_field->name, fieldnames[j]) == 0){
-				type_append_from_string(values[j], curr_field, fp);
+				append_to_file(values[j], curr_field->dataSize, fp);
 				break;
 			}
 		}
@@ -326,6 +326,55 @@ void allindexes_print(){
 	fclose(fp);
 }
 
+//Given a string with multiple substrings separated by commas, return an array of these substrings.
+//For our convenience:
+//	- trailing and leading 'white' characters are ignored.
+//	- 'white' characters in the middle of the substring are not allowed,
+//		unless it's surrounded by single quotes.
+//	- if surrounded by single quotes, everything surrounded will be considered as the substring to be returned.
+char **split_commas(char *s, int *count){
+	int slen, mlen, index = 0;
+	char **m, **r = NULL;
+
+	slen = strlen(s);
+	*count = 0;
+
+	do{
+		m = match(s+index, "^\\s*'", 1);
+		if(!m){
+			m = match(s+index, "^\\s*(\\w+\\.*\\w*)\\s*[,]{0,1}", 2);
+		} else {
+			matrix_free((void **) m, 1);
+			m = match(s+index, "^\\s*'([^']*)'[,]{0,1}", 2);
+		}
+		if(!m) break;
+
+		mlen = strlen(m[0]);
+		index += mlen;
+		
+		r = (char **) realloc(r, sizeof(char *) * (*count+1));
+		r[*count] = (char *) malloc(sizeof(char) * mlen);
+		memcpy(r[*count], m[1], mlen);
+		(*count)++;
+
+		matrix_free((void **) m, 2);
+	} while(index < slen);
+
+	return r;
+}
+
+void **strings_to_values(char *tablename, char **fields, char **value_strings, int nvalues){
+	int i;
+	TABLE_FIELD *field;
+	void **result = malloc(sizeof(void *) * nvalues);
+	for(i = 0; i < nvalues; i++){
+		field = field_from_file(tablename, fields[i]);
+		result[i] = type_data_from_string(value_strings[i], field);
+		free(field);
+	}
+	return result;
+}
+
 void shell_table_create(char *tablename, char *params){
 	char **m, **fieldNames = NULL;
 	FIELD_TYPE type, *fieldTypes = NULL;
@@ -362,4 +411,24 @@ void shell_table_create(char *tablename, char *params){
 	matrix_free((void **) fieldNames, nfields);
 	free(fieldTypes);
 	free(dataSizes);
+}
+
+void shell_table_insert(char *tablename, char *fields_string, char *values_string){
+	int countf, countv;
+	char **fields, **values_sp;
+	void **values;
+	
+	fields = split_commas(fields_string, &countf);
+	values_sp = split_commas(values_string, &countv);
+
+	if(countv == countf){
+		values = strings_to_values(tablename, fields, values_sp, countv);
+		table_insert(tablename, fields, values);
+	} else {
+		printf("There was a problem parsing the given command. Try again.\n");
+	}
+
+	matrix_free((void **) fields, countv);
+	matrix_free((void **) values_sp, countv);
+	matrix_free((void **) values, countv);
 }

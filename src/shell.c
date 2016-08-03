@@ -43,60 +43,6 @@ typedef enum {
 	FAILURE
 } TABLE_OP;
 
-//Given a string with multiple substrings separated by commas, return an array of these substrings.
-//For our convenience:
-//	- trailing and leading 'white' characters are ignored.
-//	- 'white' characters in the middle of the substring are not allowed,
-//		unless it's surrounded by single quotes.
-//	- if surrounded by single quotes, everything surrounded will be considered as the substring to be returned.
-char **split_commas(char *s, int *count){
-	int slen, mlen, index = 0;
-	char **m, **r = NULL;
-
-	slen = strlen(s);
-	*count = 0;
-
-	do{
-		m = match(s+index, "^\\s*'", 1);
-		if(!m){
-			m = match(s+index, "^\\s*(\\w+\\.*\\w*)\\s*[,]{0,1}", 2);
-		} else {
-			matrix_free((void **) m, 1);
-			m = match(s+index, "^\\s*'([^']*)'[,]{0,1}", 2);
-		}
-		if(!m) break;
-
-		mlen = strlen(m[0]);
-		index += mlen;
-		
-		r = (char **) realloc(r, sizeof(char *) * (*count+1));
-		r[*count] = (char *) malloc(sizeof(char) * mlen);
-		memcpy(r[*count], m[1], mlen);
-		(*count)++;
-
-		matrix_free((void **) m, 2);
-	} while(index < slen);
-
-	return r;
-}
-
-void insert_table(char **s){
-	int countf, countv;
-	char **fields, **values;
-	
-	fields = split_commas(s[2], &countf);
-	values = split_commas(s[3], &countv);
-
-	if(countv == countf){
-		table_insert(s[1], fields, values);
-	} else {
-		printf("There was a problem parsing the given command. Try again.\n");
-	}
-
-	matrix_free((void **) fields, countv);
-	matrix_free((void **) values, countv);
-}
-
 TABLE_OP parse(char *cmd, char ***s){
 	*s = match(cmd, "\\s*create\\s+table\\s+(\\w+)\\s*\\((.+)\\)\\s*;$", 3);
 	if(*s) return CREATE_TABLE;
@@ -131,7 +77,7 @@ TABLE_OP parse(char *cmd, char ***s){
 	return FAILURE;
 }
 
-void shell(FILE *stream) {
+void shell(FILE *stream){
 	char *cmd, **s;
 	int size;
 	
@@ -149,7 +95,7 @@ void shell(FILE *stream) {
 			
 			case INSERT_TABLE:
 				printf("INSERT_TABLE\n");
-				insert_table(s);
+				shell_table_insert(s[1], s[2], s[3]);
 				size = 4;
 				break;
 
@@ -225,7 +171,7 @@ void shell(FILE *stream) {
 	}
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]){
 	stats_set();
 	shell(stdin);
 	return 0;
