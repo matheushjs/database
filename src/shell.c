@@ -29,8 +29,6 @@
 #include <table_op.h>
 #include <globals.h>
 
-#include <assert.h>	//For debugging only.
-
 typedef enum {
 	CREATE_TABLE,
 	INSERT_TABLE,
@@ -77,35 +75,12 @@ void create_table(char **s){
 	table_destroy(&table);
 }
 
-//Returns a string where:
-//	result[0] is the full match from s[0] through the next comma or the end of the string.
-//	result[1] is everything between the single quotes.
-char **split_commas_op(char **s){
-	int size0 = 0, size1 = 0;
-	char **res = (char **) calloc(sizeof(char *), 2);
-	for(; **s != '\''; (*s)++){	//finds first quote.
-		res[0] = (char *) realloc(res[0], sizeof(char) * (size0+1));
-		res[0][size0++] = **s;
-	}
-	res[0] = (char *) realloc(res[0], sizeof(char) * (size0+1));
-	res[0][size0++] = **s;
-	for((*s)++; **s != '\''; (*s)++){	//finds last quote
-		res[0] = (char *) realloc(res[0], sizeof(char) * (size0+1));
-		res[1] = (char *) realloc(res[1], sizeof(char) * (size1+1));
-		res[0][size0++] = **s;
-		res[1][size1++] = **s;
-	}
-	res[1][size1] = '\0';
-	for(; **s != ',' && **s != '\0'; (*s)++){	//finds comma or \0
-		res[0] = (char *) realloc(res[0], sizeof(char) * (size0+1));
-		res[0][size0++] = **s;
-	}
-	res[0] = (char *) realloc(res[0], sizeof(char) * (size0+2));
-	res[0][size0++] = **s;
-	res[0][size0] = '\0';
-	return res;
-}
-
+//Given a string with multiple substrings separated by commas, return an array of these substrings.
+//For our convenience:
+//	- trailing and leading 'white' characters are ignored.
+//	- 'white' characters in the middle of the substring are not allowed,
+//		unless it's surrounded by single quotes.
+//	- if surrounded by single quotes, everything surrounded will be considered as the substring to be returned.
 char **split_commas(char *s, int *count){
 	int slen, mlen, index = 0;
 	char **m, **r = NULL;
@@ -117,12 +92,9 @@ char **split_commas(char *s, int *count){
 		m = match(s+index, "^\\s*'", 1);
 		if(!m){
 			m = match(s+index, "^\\s*(\\w+\\.*\\w*)\\s*[,]{0,1}", 2);
-			//printf("Matched: {%s}\n", m[1]);
 		} else {
 			matrix_free((void **) m, 1);
-			m = s+index;
-			m = split_commas_op((char **) &m);
-			//printf("Matched: {%s}\n", m[1]);
+			m = match(s+index, "^\\s*'([^']*)'[,]{0,1}", 2);
 		}
 		if(!m) break;
 
@@ -286,8 +258,7 @@ void shell(FILE *stream) {
 }
 
 int main(int argc, char *argv[]) {
-	stats_set();	
+	stats_set();
 	shell(stdin);
-	
 	return 0;
 }
