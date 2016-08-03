@@ -220,37 +220,6 @@ bool type_equal(void *value1, void *value2, TABLE_FIELD *field){
 	return !memcmp(value1, value2, field->dataSize) ? TRUE : FALSE;
 }
 
-//Converts 'string' from string to its proper type.
-void *type_data_from_string(char *string, TABLE_FIELD *field){
-	void *aux = malloc(field->dataSize);
-	switch(field->fieldType){
-		case INT:
-			*(int *) aux = atoi(string);
-			return aux;
-		case FLOAT:
-			*(float *) aux = (float) atof(string);
-			return aux;
-		case DOUBLE:
-			*(double *) aux = atof(string);
-			return aux;
-		case CHAR:
-			*(char *) aux = *string;
-			return aux;
-		case STRING:
-			strncpy((char *) aux, string, field->dataSize);
-			return aux;
-	}
-	free(aux);
-	return NULL;
-}
-
-//Converts 'string' to its proper data type.
-//Then appends it to the file pointed to by 'fp'.
-void type_append_from_string(char *string, TABLE_FIELD *field, FILE *fp){
-	void *value = type_data_from_string(string, field);
-	append_to_file(value, field->dataSize, fp);
-	free(value);
-}
 
 //Prints 'value' based on its type.
 void type_value_print(void *value, TABLE_FIELD *field){
@@ -273,17 +242,6 @@ void type_value_print(void *value, TABLE_FIELD *field){
 	}
 }
 
-char *type_to_string(FIELD_TYPE ftype){
-	char *result = malloc(7);
-	strcpy(	result,
-		ftype == STRING ? "string" :
-		ftype == CHAR ? "char" :
-		ftype == INT ? "int" :
-		ftype == FLOAT ? "float" :
-		ftype == DOUBLE ? "double" : "");
-	return result;
-}
-
 //Prints a record from the table 'table'.
 void record_print(void *record, TABLE *table){
 	int i, pos = 0;
@@ -295,50 +253,4 @@ void record_print(void *record, TABLE *table){
 		printf("  |  ");
 	}
 	printf("\n");
-}
-
-//Prints a table from either a .tmp file or a .dat file.
-//	'ftype' - DAT if from a .dat file, TMP if from a .tmp file.
-void ftype_table_print(TABLE *table, FILE_TYPE ftype){
-	int i, init = (ftype == DAT ? table_root_size(table) : 0);
-	char *filename = append_string((char *) table->name, (ftype == DAT ? ".dat" : ".tmp"));
-	FILE *fp = fopen(filename, "r");
-	void *record;
-
-	free(filename);
-	if(!fp) return;
-
-	for(i = 0; ; i++){
-		record = file_get_record(i, init, table->recordSize, fp);
-		if(!record) break;
-		record_print(record, table);
-		free(record);
-	}
-	fclose(fp);
-}
-
-//Prints the header of a table:
-//	<NAME>
-//	<FIELD[0]>...<FIELD[N]>
-void table_print_header(TABLE *table){
-	int i;
-	printf("Table name: %s\n", (char *) table->name);
-	if(table->fieldCounter) printf("|  ");
-	for(i = 0; i < table->fieldCounter; i++)
-		printf("%s  |  ", (char *) table->fields[i]->name);
-	printf("\n");	
-}
-
-void table_print_info(TABLE *table){
-	char *type;
-	int i;
-	printf("Table name: %s\n", (char *) table->name);
-	for(i = 0; i < table->fieldCounter; i++){
-		type = type_to_string(table->fields[i]->fieldType);
-		printf("\tField name: %s  |  Type: %s  |  Size: %d\n",
-				(char *) table->fields[i]->name,
-				type,
-				table->fields[i]->dataSize);
-		free(type);
-	}
 }

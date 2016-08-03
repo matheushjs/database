@@ -110,7 +110,7 @@ void shell(FILE *stream){
 			case SELECT_TABLE:
 				printf("SELECT_TABLE\n");
 				printf("\n");
-				select_records(s[1], s[2], s[3]);
+				shell_table_select(s[1], s[2], s[3]);
 				printf("\n");
 				size = 4;
 				break;

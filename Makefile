@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 LIBS = -lm
 INCLUDE = -I ./include
-SRC = ./src/shell.c ./src/myregex.c ./src/utils.c ./src/globals.c ./src/table_op.c ./src/table_kernel.c
+SRC = ./src/shell.c ./src/myregex.c ./src/utils.c ./src/globals.c ./src/table_op.c ./src/table_kernel.c ./src/table_high.c
 RM = rm -f
 
 all:
