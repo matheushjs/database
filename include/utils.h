@@ -2,7 +2,11 @@
 #define _UTILS_H
 
 #include <stdio.h>
-#include <globals.h>
+
+typedef enum {
+	FALSE,
+	TRUE
+} bool;
 
 char *append_string(const char *src, const char *append);
 char *read_line(FILE *stream);

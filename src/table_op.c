@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <utils.h>
+#include <table_types.h>
 #include <table_kernel.h>
 #include <table_high.h>
 #include <myregex.h>

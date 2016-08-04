@@ -1,7 +1,8 @@
 #ifndef _TABLE_KERNEL_H
 #define _TABLE_KERNEL_H
 
-#include <globals.h>
+#include <utils.h>
+#include <table_types.h>
 
 int table_root_size(TABLE *);
 int field_offset(TABLE *, char *);

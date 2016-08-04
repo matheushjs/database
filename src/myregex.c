@@ -10,7 +10,7 @@ char **match(char *string, char *PATTERN, int nvars) {
 	regmatch_t *rm;
 	char **allstrings = NULL;
 
-	if(regcomp(&re, PATTERN, REG_EXTENDED) != 0) {
+	if(regcomp(&re, PATTERN, REG_EXTENDED | REG_ICASE) != 0) {
 		fprintf(stderr, "Failed to compile regex '%s'\n", PATTERN);
 		return allstrings;
 	}

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
+#include <table_types.h>
 #include <globals.h>
 
 #include <assert.h>

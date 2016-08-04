@@ -3,7 +3,7 @@
 #include <string.h>
 #include <utils.h>
 #include <stdarg.h>
-#include <globals.h>
+#include <utils.h>
 
 //Given a 'src' string
 //Creates a string that equals 'src' with 'append' appended to the end of it.
@@ -50,7 +50,7 @@ char *read_line(FILE *stream) {
 		c = fgetc(stream);
 		line = (char *) realloc(line, sizeof(char) * (counter+1));
 		line[counter++] = c;
-	} while (c != DELIMITER);
+	} while (c != '\n');
 
 	line = (char *) realloc(line, sizeof(char) * (counter+1));
 	line[counter++] = '\0';
