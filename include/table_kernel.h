@@ -12,7 +12,7 @@ void allindexes_add(char *, char *);
 
 TABLE *table_alloc(char *);
 void table_destroy(TABLE **);
-void table_add_field(TABLE *, char *, FIELD_TYPE, int );
+void table_add_field(TABLE *, char *, FIELD_TYPE, int);
 void table_to_file(TABLE *table);
 void table_create(char *, int, char **, FIELD_TYPE *, int *);
 TABLE *table_from_file(char *);

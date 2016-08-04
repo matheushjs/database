@@ -19,7 +19,7 @@
 //adds value "Matheus" to field "name" of table "people"
 //     value "20" to field "age"
 //     value "162" to field "ID"
-//Note the order in which the values were added to the table.
+//In that order.
 void table_insert(char *tablename, char **fieldnames, void **values){
 	int i, j;
 	TABLE *table = table_from_file(tablename);
@@ -157,7 +157,7 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 
 	//It makes sense to place a '-1' here, but that will make the binary search fail.
 	//That's due to approximation issues.
-	hi = nrecords;
+	hi = nrecords-1;
 	lo = 0;
 	for(;;){
 		cur = (hi + lo) / 2;
@@ -190,14 +190,12 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 			free(record);
 			return count;
 		} else if(type_higher(value, data, field)){
-			free(data);
-			if(cur == lo) return count;
-			lo = cur;
+			lo = cur+1;
 		} else{
-			free(data);
-			if(cur == lo) return count;
-			hi = cur;
+			hi = cur-1;
 		}
+		free(data);
+		if(lo > hi) return count;
 	}
 }
 
