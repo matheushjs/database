@@ -239,10 +239,10 @@ void type_value_print(void *value, TABLE_FIELD *field){
 			printf("%lf", *(double *) value);
 			break;
 		case CHAR:
-			printf("%c", *(char *) value);
+			printf("'%c'", *(char *) value);
 			break;
 		case STRING:
-			printf("%s", (char *) value);
+			printf("'%s'", (char *) value);
 			break;
 	}
 }
@@ -251,11 +251,10 @@ void type_value_print(void *value, TABLE_FIELD *field){
 void record_print(void *record, TABLE *table){
 	int i, pos = 0;
 
-	if(table->fieldCounter) printf("|  ");
 	for(i = 0; i < table->fieldCounter; i++){
 		type_value_print(record+pos, table->fields[i]);
 		pos += table->fields[i]->dataSize;
-		printf("  |  ");
+		if(i != table->fieldCounter-1) printf(", ");
 	}
 	printf("\n");
 }

@@ -86,9 +86,7 @@ void shell(FILE *stream){
 
 			case SELECT_TABLE:
 				printf("SELECT_TABLE\n");
-				printf("\n");
 				shell_table_select(s[1], s[2], s[3]);
-				printf("\n");
 				size = 4;
 				break;
 
@@ -108,25 +106,19 @@ void shell(FILE *stream){
 
 			case PRINT_ALL_TABLES:
 				printf("PRINT_ALL_TABLES\n");
-				printf("\n");
 				alltables_print();
-				printf("\n");
 				size = 1;
 				break;
 			
 			case PRINT_ALL_INDEXES:
 				printf("PRINT_ALL_INDEXES\n");
-				printf("\n");
 				allindexes_print();
-				printf("\n");
 				size = 1;
 				break;
 
 			case STATISTICS:
 				printf("STATISTICS\n");
-				printf("\n");
 				stats_print();
-				printf("\n");
 				size = 1;
 				break;
 

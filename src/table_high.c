@@ -282,7 +282,7 @@ void table_print_header(TABLE *table){
 }
 
 char *type_to_string(FIELD_TYPE ftype){
-	char *result = malloc(7);
+	char *result = malloc(10);
 	strcpy(	result,
 		ftype == STRING ? "string" :
 		ftype == CHAR ? "char" :
@@ -295,15 +295,17 @@ char *type_to_string(FIELD_TYPE ftype){
 void table_print_info(TABLE *table){
 	char *type;
 	int i;
-	printf("Table name: %s\n", (char *) table->name);
+	printf("\nTablename: %s\n", (char *) table->name);
 	for(i = 0; i < table->fieldCounter; i++){
 		type = type_to_string(table->fields[i]->fieldType);
-		printf("\tField name: %s  |  Type: %s  |  Size: %d\n",
+		printf("Field: %s Type: %s Size: %d\n",
 				(char *) table->fields[i]->name,
 				type,
-				table->fields[i]->dataSize);
+				table->fields[i]->dataSize - (table->fields[i]->fieldType == STRING ? 1 : 0));
+				//line above subtracts 1 from dataSize (disregards the '\0') if the type is a STRING.
 		free(type);
 	}
+	printf("\n");
 }
 
 //Prints a table from either a .tmp file or a .dat file.
@@ -372,13 +374,13 @@ void allindexes_print(){
 
 	char string[MAX_NAME_SIZE];
 	int i;
-	printf("Index Information");
 	for(;;){
 		if(file_EOF(fp)) break;
+		printf("\nIndex Information\n");
 		for(i = 0; (string[i] = fgetc(fp)) != '\0'; i++);
-		printf("\n\tTablename: %s\n", string);
+		printf("\tTablename: %s\n", string);
 		for(i = 0; (string[i] = fgetc(fp)) != '\0'; i++);
-		printf("\tFieldname: %s\n", string);
+		printf("\tFieldname: %s\n\n", string);
 	}
 	fclose(fp);
 }
