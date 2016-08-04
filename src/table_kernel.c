@@ -122,6 +122,10 @@ void table_to_file(TABLE *table){
 	fclose(fp);
 }
 
+//Creates a table with:
+//	name 'tablename'
+//	number of fields 'nfields'
+//	field[i] with name 'names[i]', type 'types[i]' and datasize 'sizes[i]'.
 void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types, int *sizes){
 	int i;
 	TABLE *table = table_alloc(tablename);

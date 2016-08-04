@@ -69,18 +69,23 @@ char **split_commas(char *s, int *count){
 	return r;
 }
 
+//Converts each 'value_strings[i]', which is related to the field 'fields[i]', to its proper type.
+//Returns as a different 
 void **strings_to_values(char *tablename, char **fields, char **value_strings, int nvalues){
 	int i;
-	TABLE_FIELD *field;
+	TABLE_FIELD *curr_field;
 	void **result = malloc(sizeof(void *) * nvalues);
 	for(i = 0; i < nvalues; i++){
-		field = field_from_file(tablename, fields[i]);
-		result[i] = type_data_from_string(value_strings[i], field);
-		free(field);
+		curr_field = field_from_file(tablename, fields[i]);
+		result[i] = type_data_from_string(value_strings[i], curr_field);
+		free(curr_field);
 	}
 	return result;
 }
 
+//Creates a table with name 'tablename' and fields specified by the half-parsed string 'params'.
+//'params' would be a list of comma-separated of strings that follow the format "{fieldname} {fieldtype} {[datasize]?}"
+//e.g: "code int, name char[80], age double, height float"
 void shell_table_create(char *tablename, char *params){
 	char **m, **fieldNames = NULL;
 	FIELD_TYPE type, *fieldTypes = NULL;
@@ -119,6 +124,10 @@ void shell_table_create(char *tablename, char *params){
 	free(dataSizes);
 }
 
+//Inserts value into table of name "tablename" based on the
+//	half-parsed strings 'fields_string' and 'values_string'
+//"fields_string" example: "code, name, height, age"
+//"values_string" example: "1, 'john smith', 1.57, 19.7"
 void shell_table_insert(char *tablename, char *fields_string, char *values_string){
 	int countf, countv;
 	char **fields, **values_sp;
@@ -139,6 +148,8 @@ void shell_table_insert(char *tablename, char *fields_string, char *values_strin
 	matrix_free((void **) values, countv);
 }
 
+//Converts 'value' to the correct type, based on its field of name 'fieldname'
+//then, with said value as key, executes a select procedure upon table of name 'tablename'.
 void shell_table_select(char *tablename, char *fieldname, char *value){
 	TABLE_FIELD *field = field_from_file(tablename, fieldname);
 	void *value_bytes = type_data_from_string(value, field);

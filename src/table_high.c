@@ -337,7 +337,7 @@ void table_print(char *tablename){
 void alltables_print(){
 	FILE *fp = fopen(ALLTABLES_FILE, "r");
 	
-	stats.nSAT++;
+	stats.nSAT++;	//nShow All Tables
 
 	if(!fp){
 		printf("There are no tables.");
@@ -360,7 +360,7 @@ void alltables_print(){
 void allindexes_print(){
 	FILE *fp = fopen(ALLINDEXES_FILE, "r");
 	
-	stats.nSAI++;
+	stats.nSAI++;	//nShow All Indexes
 
 	if(!fp){
 		printf("There are no indexes.");

@@ -1,26 +1,3 @@
-/* NOTES:
- * 	This "table handler" works in a very simple way
- *	The user creates a table, then adds data,\
- *	while they are adding data, we put all that data in a .tmp file\
- *	once the user is done adding data, they can ask for an 'index' service\
- *	then we add the data from the .tmp file to the .dat file, and then index all the data
- *
- *	Why don't we directly add data into the .dat file?
- *	Because if the user is adding data into the .tmp file,\
- *	and they have already some indexed data into the .dat file,
- *	even if they don't ask for an indexing service, they can ask for a 'select' service\
- *	having .tmp and .dat files allows us to use binary search into the .dat file,\
- *	and then use sequential search in the .tmp file.
- *	If we put data directly into the .dat file, then we wouldn't know if the data were\
- *	ordered or not, forcing us to do a sequential search throughout the whole data.
- */
-
-/* SCHEDULE:
- * OPTIMIZATIONS:
- * 	Many functions take the name of the table as argument, and then open the table from the .dat file.
- * 	Consider making them accept a TABLE * argument instead. See if that'd be better.
- */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

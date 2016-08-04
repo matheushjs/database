@@ -127,4 +127,3 @@ void *file_get_record(int index, int initOffset, int recordSize, FILE *fp){
 	if(fread(record, recordSize, 1, fp) != 1){free(record); return NULL;}
 	return record;
 }
-
