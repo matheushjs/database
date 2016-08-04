@@ -146,12 +146,10 @@ void index_sort(char *tablename, char *fieldname){
 }
 
 //Select procedure upon the .idx file.
-//Searches using binary search.
-void idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, void *value){
-	int lo, hi, cur, offset, nrecords, idx_rSize;
+//Returns the number of matched records.
+int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, void *value){
+	int lo, hi, cur, offset, nrecords, idx_rSize, count = 0;
 	void *data, *record;
-
-	stats.nLBR = 0;
 
 	idx_rSize = field->dataSize + sizeof(int);
 	nrecords = get_file_size(idx_fp) / idx_rSize;
@@ -161,17 +159,13 @@ void idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, vo
 	hi = nrecords;
 	lo = 0;
 
-	if(!hi) return;
+	if(!hi) return count;
 	
 	for(;;){
 		cur = (hi + lo) / 2;
 		data = file_get_record(cur, 0, idx_rSize, idx_fp);
 		
-		if(type_higher(value, data, field)){
-			free(data);
-			if(cur == lo) return;
-			lo = cur;
-		} else if(type_equal(value, data, field)){
+		if(type_equal(value, data, field)){
 			free(data);
 
 			//Finds the first occurance of the data.
@@ -189,27 +183,31 @@ void idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, vo
 					offset = *(int *) (data + field->dataSize);
 					fseek(dat_fp, offset, SEEK_SET);
 					fread(record, table->recordSize, 1, dat_fp);
-					stats.nLBR++;
+					count++;
 					record_print(record, table);
 				} else{ free(data); break; }
 				free(data);
 			}
 
 			free(record);
-			return;
-		} else {
+			return count;
+		} else if(type_higher(value, data, field)){
 			free(data);
-			if(cur == lo) return;
+			if(cur == lo) return count;
+			lo = cur;
+		} else{
+			free(data);
+			if(cur == lo) return count;
 			hi = cur;
 		}
 	}
 }
 
-void file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *value_bytes){
-	int i, offset, field_init, nrecords;	
+//Select procedure upon .dat and .tmp files.
+//Returns the number of matched records.
+int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *value_bytes){
+	int i, offset, field_init, nrecords, count = 0;	
 	void *data = malloc(table->recordSize);
-
-	stats.nLSR = 0;
 
 	field_init = field_offset(table, (char *) field->name);
 	nrecords = (get_file_size(fp) - init) / table->recordSize;
@@ -221,50 +219,54 @@ void file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *val
 		if(type_equal(data, value_bytes, field)){
 			fseek(fp, offset, SEEK_SET);
 			fread(data, table->recordSize, 1, fp);
-			stats.nLSR++;
+			count++;
 			record_print(data, table);
 		}
 	}
 
 	free(data);
+	return count;
 }
 
-void select_records(char *tablename, char *fieldname, char *value){
+int select_records(char *tablename, char *fieldname, char *value){
+	int bin_count = 0, seq_count = 0;
 	char *idx_file, *dat_file, *tmp_file;
+	FILE *fp, *dat_fp;
 
 	stats.nSelects++;
-
-	//Prepare file names.
-	idx_file = append_strings(4, tablename, "-", fieldname, ".idx");
-	dat_file = append_string(tablename, ".dat");
-	tmp_file = append_string(tablename, ".tmp");
 
 	//Prepare table and field.
 	TABLE *table = table_from_file(tablename);
 	TABLE_FIELD *field = field_from_file(tablename, fieldname);
-
-	//Search .dat file.
-	FILE *fp, *dat_fp;
-
+	
+	//Search .dat or .idx files.
+	idx_file = append_strings(4, tablename, "-", fieldname, ".idx");
+	dat_file = append_string(tablename, ".dat");
 	fp = fopen(idx_file, "r");
 	dat_fp = fopen(dat_file, "r");
 	free(idx_file);
 	free(dat_file);
-	if(fp != NULL){
-		idx_select(table, field, fp, dat_fp, value);
+	if(fp){
+		bin_count = idx_select(table, field, fp, dat_fp, value);
 		fclose(fp);
 	} else {
-		file_select(table, field, dat_fp, table->rootSize, value);
+		seq_count = file_select(table, field, dat_fp, table->rootSize, value);
 	}
 
+	tmp_file = append_string(tablename, ".tmp");
 	fp = fopen(tmp_file, "r");
 	free(tmp_file);
-	if(fp) file_select(table, field, fp, 0, value);
+	if(fp) seq_count += file_select(table, field, fp, 0, value);
+	if(!(seq_count|bin_count)) printf("null\n");
+
+	stats.nLSR = seq_count;
+	stats.nLBR = bin_count;
 
 	free(field);
 	fclose(fp);
 	fclose(dat_fp);
 	table_destroy(&table);
+	return seq_count + bin_count;
 }
 
 //Prints the header of a table:
