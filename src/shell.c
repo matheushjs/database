@@ -58,11 +58,8 @@ void shell(FILE *stream){
 	char *cmd, **s;
 	int size;
 	
-	printf(">> Type your command\n");
 	for(;;){
-		printf(">> ");
 		cmd = read_line(stream);
-
 		switch(parse(cmd, &s)){
 			case CREATE_TABLE:
 				printf("CREATE_TABLE\n");

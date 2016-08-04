@@ -20,6 +20,5 @@ statistics
 insert into pessoa (codigo, nome, idade, sexo) values (15, 'josefina say', 72, 'F'); 
 sort pessoa(codigo);
 sort pessoa(nome);
-print table pessoa;
-print table empresa;
+statistics
 quit;
