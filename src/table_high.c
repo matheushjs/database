@@ -153,14 +153,12 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 
 	idx_rSize = field->dataSize + sizeof(int);
 	nrecords = get_file_size(idx_fp) / idx_rSize;
+	if(!nrecords) return 0;
 
 	//It makes sense to place a '-1' here, but that will make the binary search fail.
 	//That's due to approximation issues.
 	hi = nrecords;
 	lo = 0;
-
-	if(!hi) return count;
-	
 	for(;;){
 		cur = (hi + lo) / 2;
 		data = file_get_record(cur, 0, idx_rSize, idx_fp);
@@ -302,7 +300,7 @@ void table_print_info(TABLE *table){
 				(char *) table->fields[i]->name,
 				type,
 				table->fields[i]->dataSize - (table->fields[i]->fieldType == STRING ? 1 : 0));
-				//line above subtracts 1 from dataSize (disregards the '\0') if the type is a STRING.
+				//subtracts 1 from dataSize (disregards the '\0') if the type is a STRING.
 		free(type);
 	}
 	printf("\n");
