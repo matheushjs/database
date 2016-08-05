@@ -4,6 +4,8 @@
 #include <utils.h>
 #include <table_types.h>
 
+int table_record_size(TABLE *table);
+int table_root_size_constant();
 int table_root_size(TABLE *);
 int field_offset(TABLE *, char *);
 
@@ -22,6 +24,6 @@ void tmp_to_dat(char *);
 
 bool type_higher(void *, void *, TABLE_FIELD *);
 bool type_equal(void *, void *, TABLE_FIELD *);
-void record_print(void *, TABLE *);
+void type_value_print(void *value, TABLE_FIELD *field);
 
 #endif

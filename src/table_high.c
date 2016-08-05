@@ -145,6 +145,18 @@ void index_sort(char *tablename, char *fieldname){
 	fclose(fp);
 }
 
+//Prints a record from the table 'table'.
+void record_print(void *record, TABLE *table){
+	int i, pos = 0;
+
+	for(i = 0; i < table->fieldCounter; i++){
+		type_value_print(record+pos, table->fields[i]);
+		pos += table->fields[i]->dataSize;
+		if(i != table->fieldCounter-1) printf(", ");
+	}
+	printf("\n");
+}
+
 //Select procedure upon the .idx file.
 //Returns the number of matched records.
 int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, void *value){

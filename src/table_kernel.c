@@ -246,15 +246,3 @@ void type_value_print(void *value, TABLE_FIELD *field){
 			break;
 	}
 }
-
-//Prints a record from the table 'table'.
-void record_print(void *record, TABLE *table){
-	int i, pos = 0;
-
-	for(i = 0; i < table->fieldCounter; i++){
-		type_value_print(record+pos, table->fields[i]);
-		pos += table->fields[i]->dataSize;
-		if(i != table->fieldCounter-1) printf(", ");
-	}
-	printf("\n");
-}
