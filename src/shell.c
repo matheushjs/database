@@ -21,36 +21,27 @@ typedef enum {
 } TABLE_OP;
 
 TABLE_OP parse(char *cmd, char ***s){
-	*s = match(cmd, "\\s*create\\s+table\\s+(\\w+)\\s*\\((.+)\\)\\s*;\\s*$", 3);
-	if(*s) return CREATE_TABLE;
-
-	*s = match(cmd, "\\s*insert\\s+into\\s+(\\w+)\\s*\\((.+)\\)\\s*values\\s*\\((.+)\\)\\s*;\\s*$", 4);
-	if(*s) return INSERT_TABLE;
-
-	*s = match(cmd, "\\s*create\\s+index\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3);
-	if(*s) return INDEX_TABLE;
-
-	*s = match(cmd, "\\s*select\\s+(\\w+)\\s+(\\w+)\\s+(\\w+\\.*\\w*)\\s*;\\s*$", 4);
-	if(*s) return SELECT_TABLE;
-
-	*s = match(cmd, "\\s*sort\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3);
-	if(*s) return SORT_TABLE;
-
-	*s = match(cmd, "\\s*print\\s+table\\s+(\\w+)\\s*;\\s*$", 2);
-	if(*s) return PRINT_TABLE;
-
-	*s = match(cmd, "\\s*showalltable(s){0,1}\\s*(;){0,1}\\s*$", 1);
-	if(*s) return PRINT_ALL_TABLES;
-
-	*s = match(cmd, "\\s*showallindex(es){0,1}\\s*(;){0,1}\\s*$", 1);
-	if(*s) return PRINT_ALL_INDEXES;
-	
-	*s = match(cmd, "\\s*statistic(s){0,1}\\s*(;){0,1}\\s*$", 1);
-	if(*s) return STATISTICS;
-
-	*s = match(cmd, "^\\s*quit\\s*;\\s*$", 1);
-	if(*s) return QUIT;
-
+	//Extra parentheses to comply with gcc -Wall flag.
+	if((*s = match(cmd, "\\s*create\\s+table\\s+(\\w+)\\s*\\((.+)\\)\\s*;\\s*$", 3)))
+		return CREATE_TABLE;
+	if((*s = match(cmd, "\\s*insert\\s+into\\s+(\\w+)\\s*\\((.+)\\)\\s*values\\s*\\((.+)\\)\\s*;\\s*$", 4)))
+		return INSERT_TABLE;
+	if((*s = match(cmd, "\\s*create\\s+index\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3)))
+		return INDEX_TABLE;
+	if((*s = match(cmd, "\\s*select\\s+(\\w+)\\s+(\\w+)\\s+(\\w+\\.*\\w*)\\s*;\\s*$", 4)))
+		return SELECT_TABLE;
+	if((*s = match(cmd, "\\s*sort\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3)))
+		return SORT_TABLE;
+	if((*s = match(cmd, "\\s*print\\s+table\\s+(\\w+)\\s*;\\s*$", 2)))
+		return PRINT_TABLE;
+	if((*s = match(cmd, "\\s*showalltable(s){0,1}\\s*(;){0,1}\\s*$", 1)))
+		return PRINT_ALL_TABLES;
+	if((*s = match(cmd, "\\s*showallindex(es){0,1}\\s*(;){0,1}\\s*$", 1)))
+		return PRINT_ALL_INDEXES;
+	if((*s = match(cmd, "\\s*statistic(s){0,1}\\s*(;){0,1}\\s*$", 1)))
+		return STATISTICS;
+	if((*s = match(cmd, "^\\s*quit\\s*;\\s*$", 1)))
+		return QUIT;
 	return FAILURE;
 }
 
