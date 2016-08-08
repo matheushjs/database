@@ -292,7 +292,7 @@ void table_print_header(TABLE *table){
 char *type_to_string(FIELD_TYPE ftype){
 	char *result = malloc(10);
 	strcpy(	result,
-		ftype == STRING ? "string" :
+		ftype == STRING ? "char" :
 		ftype == CHAR ? "char" :
 		ftype == INT ? "int" :
 		ftype == FLOAT ? "float" :
@@ -306,7 +306,7 @@ void table_print_info(TABLE *table){
 	printf("\nTablename: %s\n", (char *) table->name);
 	for(i = 0; i < table->fieldCounter; i++){
 		type = type_to_string(table->fields[i]->fieldType);
-		printf("\tField: %s Type: %s Size: %d\n",
+		printf("\tField: %s Type: %s Size %d\n",
 				(char *) table->fields[i]->name,
 				type,
 				table->fields[i]->dataSize - (table->fields[i]->fieldType == STRING ? 1 : 0));

@@ -15,6 +15,13 @@ run:
 	make clean
 	./shell
 
+test:
+	make all
+	cp shell ../test_env
+	cd ../test_env
+	sh test.sh
+	sh check.sh
+
 debug:
 	make clean
 	valgrind --leak-check=full ./shell
