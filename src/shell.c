@@ -48,8 +48,10 @@ TABLE_OP parse(char *cmd, char ***s){
 void shell(FILE *stream){
 	char *cmd, **s;
 	int size;
-	
-	for(;;){
+
+	//EOF detection for stdin will not work when the user is typing commands.
+	//Therefore, this shell() only works with stdin if an input is given through '<' command (linux).
+	for(; !file_EOF(stream) ;){
 		cmd = read_line(stream);
 		switch(parse(cmd, &s)){
 			case CREATE_TABLE:
