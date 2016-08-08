@@ -6,6 +6,15 @@
 #include <table_op.h>
 #include <globals.h>
 
+//Comment line below to prevent debug prints.
+//#define NDEBUG
+
+#ifdef NDEBUG
+#define DEBUG(X) printf(X);
+#else
+#define DEBUG(X)
+#endif
+
 typedef enum {
 	CREATE_TABLE,
 	INSERT_TABLE,
@@ -55,19 +64,19 @@ void shell(FILE *stream){
 		cmd = read_line(stream);
 		switch(parse(cmd, &s)){
 			case CREATE_TABLE:
-				printf("CREATE_TABLE\n");
+				DEBUG("CREATE_TABLE\n");
 				shell_table_create(s[1], s[2]);
 				size = 3;
 				break;
 			
 			case INSERT_TABLE:
-				printf("INSERT_TABLE\n");
+				DEBUG("INSERT_TABLE\n");
 				shell_table_insert(s[1], s[2], s[3]);
 				size = 4;
 				break;
 
 			case INDEX_TABLE:
-				printf("INDEX_TABLE\n");
+				DEBUG("INDEX_TABLE\n");
 				stats.nIndexes++;
 				table_index(s[1], s[2]);
 				index_sort(s[1], s[2]);
@@ -75,13 +84,13 @@ void shell(FILE *stream){
 				break;
 
 			case SELECT_TABLE:
-				printf("SELECT_TABLE\n");
+				DEBUG("SELECT_TABLE\n");
 				shell_table_select(s[1], s[2], s[3]);
 				size = 4;
 				break;
 
 			case SORT_TABLE:
-				printf("SORT_TABLE\n");
+				DEBUG("SORT_TABLE\n");
 				stats.nSorts++;
 				table_index(s[1], s[2]);
 				index_sort(s[1], s[2]);
@@ -89,38 +98,38 @@ void shell(FILE *stream){
 				break;
 				
 			case PRINT_TABLE:
-				printf("PRINT_TABLE\n");
+				DEBUG("PRINT_TABLE\n");
 				table_print(s[1]);
 				size = 2;
 				break;
 
 			case PRINT_ALL_TABLES:
-				printf("PRINT_ALL_TABLES\n");
+				DEBUG("PRINT_ALL_TABLES\n");
 				alltables_print();
 				size = 1;
 				break;
 			
 			case PRINT_ALL_INDEXES:
-				printf("PRINT_ALL_INDEXES\n");
+				DEBUG("PRINT_ALL_INDEXES\n");
 				allindexes_print();
 				size = 1;
 				break;
 
 			case STATISTICS:
-				printf("STATISTICS\n");
+				DEBUG("STATISTICS\n");
 				stats_print();
 				size = 1;
 				break;
 
 			case QUIT:
-				printf("QUIT\n");
+				DEBUG("QUIT\n");
 				free(*s);
 				free(s);
 				free(cmd);
 				return;
 
 			case FAILURE:
-				printf("FAILURE\n");
+				DEBUG("FAILURE\n");
 				free(cmd);
 				continue;
 		}
