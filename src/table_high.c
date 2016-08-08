@@ -8,6 +8,20 @@
 
 #include <assert.h>
 
+void alltables_add(char *tablename){
+	FILE *fp = fopen(ALLTABLES_FILE, "r+");
+	if(!fp) fp = fopen(ALLTABLES_FILE, "w");
+	append_to_file(tablename, strlen(tablename)+1, fp);
+	fclose(fp);
+}
+
+void allindexes_add(char *tablename, char *fieldname){
+	FILE *fp = fopen(ALLINDEXES_FILE, "r+");
+	if(!fp) fp = fopen(ALLINDEXES_FILE, "w");
+	append_to_file(tablename, strlen(tablename)+1, fp);
+	append_to_file(fieldname, strlen(fieldname)+1, fp);
+	fclose(fp);
+}
 //Given the name of a table,
 //an array of fieldnames in a certain order,
 //and an array of values in the same convenient order,

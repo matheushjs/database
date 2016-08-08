@@ -66,6 +66,8 @@ void shell(FILE *stream){
 			case CREATE_TABLE:
 				DEBUG("CREATE_TABLE\n");
 				shell_table_create(s[1], s[2]);
+				alltables_add(s[1]);
+				stats.nTables++;
 				size = 3;
 				break;
 			

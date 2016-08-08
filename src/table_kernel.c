@@ -41,21 +41,6 @@ int field_offset(TABLE *table, char *fieldname){
 	return size;
 }
 
-void alltables_add(char *tablename){
-	FILE *fp = fopen(ALLTABLES_FILE, "r+");
-	if(!fp) fp = fopen(ALLTABLES_FILE, "w");
-	append_to_file(tablename, strlen(tablename)+1, fp);
-	fclose(fp);
-}
-
-void allindexes_add(char *tablename, char *fieldname){
-	FILE *fp = fopen(ALLINDEXES_FILE, "r+");
-	if(!fp) fp = fopen(ALLINDEXES_FILE, "w");
-	append_to_file(tablename, strlen(tablename)+1, fp);
-	append_to_file(fieldname, strlen(fieldname)+1, fp);
-	fclose(fp);
-}
-
 //Creates a table without any fields
 TABLE *table_alloc(char *name){
 	TABLE *table = (TABLE *) calloc(sizeof(TABLE), 1);
@@ -100,17 +85,13 @@ void table_add_field(TABLE *table, char *fieldname, FIELD_TYPE type, int dataSiz
 	table->recordSize += newfield->dataSize;
 }
 
-//Saves a table to a .dat file
+//Saves initial table structure to a .dat file.
 void table_to_file(TABLE *table){
 	char *filename;
 	FILE *fp;
 	int i;
 
 	filename = append_string(table->name, ".dat");
-	if(!file_exist(filename)){
-		alltables_add(table->name);
-		stats.nTables++;
-	}
 	fp = fopen(filename, "w+");
 	
 	//Saves data

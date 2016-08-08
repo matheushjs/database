@@ -9,9 +9,6 @@ int table_root_size_constant();
 int table_root_size(TABLE *);
 int field_offset(TABLE *, char *);
 
-void alltables_add(char *);
-void allindexes_add(char *, char *);
-
 TABLE *table_alloc(char *);
 void table_destroy(TABLE **);
 void table_add_field(TABLE *, char *, FIELD_TYPE, int);
