@@ -306,7 +306,7 @@ void table_print_info(TABLE *table){
 	printf("\nTablename: %s\n", (char *) table->name);
 	for(i = 0; i < table->fieldCounter; i++){
 		type = type_to_string(table->fields[i]->fieldType);
-		printf("Field: %s Type: %s Size: %d\n",
+		printf("\tField: %s Type: %s Size: %d\n",
 				(char *) table->fields[i]->name,
 				type,
 				table->fields[i]->dataSize - (table->fields[i]->fieldType == STRING ? 1 : 0));
