@@ -33,13 +33,31 @@ void *type_data_from_string(char *string, TABLE_FIELD *field){
 	return NULL;
 }
 
+//Given a string s, return the comma-separated substrings as an array of strings.
+//Double commas aren't expected, but will usually return an empty substring for that case.
+//A comma followed by the end of the string will not be considered as an empty substring.
+char **split_commas(char *s, int *count){
+	char c, **res = NULL;
+	int i, start, len = strlen(s);
+	
+	*count = 0;
+	for(i = 0; i < len; i++){
+		(*count)++;
+		res = (char **) realloc(res, sizeof(char *) * (*count));
+		start = i;
+		while(s[i] != '\0' && s[i] != ',') i++;
+		res[*count-1] = strndup(s+start, i-start);
+	}
+	return res;
+}
+
 //Given a string with multiple substrings separated by commas, return an array of these substrings.
 //For our convenience:
 //	- trailing and leading 'white' characters are ignored.
 //	- 'white' characters in the middle of the substring are not allowed,
 //		unless it's surrounded by single quotes.
 //	- if surrounded by single quotes, everything surrounded will be considered as the substring to be returned.
-char **split_commas(char *s, int *count){
+char **insert_parse_op(char *s, int *count){
 	int slen, mlen, index = 0;
 	char **m, **r = NULL;
 
@@ -134,8 +152,8 @@ void shell_table_insert(char *tablename, char *fields_string, char *values_strin
 	char **fields, **values_sp;
 	void **values;
 	
-	fields = split_commas(fields_string, &countf);
-	values_sp = split_commas(values_string, &countv);
+	fields = insert_parse_op(fields_string, &countf);
+	values_sp = insert_parse_op(values_string, &countv);
 
 	if(countv == countf){
 		values = strings_to_values(tablename, fields, values_sp, countv);
