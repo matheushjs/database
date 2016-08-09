@@ -36,8 +36,9 @@ void *type_data_from_string(char *string, TABLE_FIELD *field){
 //Given a string s, return the comma-separated substrings as an array of strings.
 //Double commas aren't expected, but will usually return an empty substring for that case.
 //A comma followed by the end of the string will not be considered as an empty substring.
+//Returns NULL if the string given has length 0.
 char **split_commas(char *s, int *count){
-	char c, **res = NULL;
+	char **res = NULL;
 	int i, start, len = strlen(s);
 	
 	*count = 0;
@@ -57,39 +58,49 @@ char **split_commas(char *s, int *count){
 //	- 'white' characters in the middle of the substring are not allowed,
 //		unless it's surrounded by single quotes.
 //	- if surrounded by single quotes, everything surrounded will be considered as the substring to be returned.
+//Returns NULL in case of failure:
+//	- string 's' has length 0.
+//	- or any substring of 's' has a not parseable format.
 char **insert_parse_op(char *s, int *count){
-	int slen, mlen, index = 0;
-	char **m, **r = NULL;
-
-	slen = strlen(s);
-	*count = 0;
-
-	do{
-		m = match(s+index, "^\\s*'", 1);
-		if(!m){
-			m = match(s+index, "^\\s*(\\w+\\.*\\w*)\\s*[,]{0,1}", 2);
-		} else {
+	int i;
+	char **res = NULL, **m, **split = split_commas(s, count);
+	
+	if(*count) res = (char **) calloc(sizeof(char *), *count);
+	for(i = 0; i < *count; i++){
+		m = match(split[i], "^\\s*'.*$", 1);
+		if(!m){		//If it's a value not within single quotes (numbers or single words/letters).
+			m = match(split[i], "^\\s*(\\w+\\.*\\w*)\\s*$", 2);
+			if(m){
+				res[i] = m[1];
+				free(m[0]), free(m);
+			} else {
+				//exception
+				matrix_free((void **) res, *count);
+				matrix_free((void **) m, 2);
+				res = NULL;
+				break;
+			}
+		} else {	//If it's a value within single quotes (multiple words or letters).
 			matrix_free((void **) m, 1);
-			m = match(s+index, "^\\s*'([^']*)'[,]{0,1}", 2);
+			m = match(split[i], "^\\s*'([^']*)'\\s*$", 2);
+			if(m){
+				res[i] = m[1];
+				free(m[0]), free(m);
+			} else {
+				//exception
+				matrix_free((void**) res, *count);
+				matrix_free((void **) m, 2);
+				res = NULL;
+				break;
+			}
 		}
-		if(!m) break;
-
-		mlen = strlen(m[0]);
-		index += mlen;
-		
-		r = (char **) realloc(r, sizeof(char *) * (*count+1));
-		r[*count] = (char *) malloc(sizeof(char) * mlen);
-		memcpy(r[*count], m[1], mlen);
-		(*count)++;
-
-		matrix_free((void **) m, 2);
-	} while(index < slen);
-
-	return r;
+	}
+	
+	matrix_free((void **) split, *count);
+	return res;
 }
 
-//Converts each 'value_strings[i]', which is related to the field 'fields[i]', to its proper type.
-//Returns as a different 
+//Converts each 'value_strings[i]', which is a value related to the field 'fields[i]', to its proper type.
 void **strings_to_values(char *tablename, char **fields, char **value_strings, int nvalues){
 	int i;
 	TABLE_FIELD *curr_field;
