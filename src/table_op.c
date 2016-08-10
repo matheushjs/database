@@ -183,7 +183,7 @@ void shell_table_insert(char *tablename, char *fields_string, char *values_strin
 void shell_table_select(char *tablename, char *fieldname, char *value){
 	TABLE_FIELD *field = field_from_file(tablename, fieldname);
 	void *value_bytes = type_data_from_string(value, field);
-	select_records(tablename, fieldname, value_bytes);
+	table_select_records(tablename, fieldname, value_bytes);
 	free(value_bytes);
 	free(field);
 }

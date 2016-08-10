@@ -53,11 +53,8 @@ TABLE *table_alloc(char *name){
 
 //Deallocates a table from the memory
 void table_destroy(TABLE **table){
-	int i;
 	if(!*table) return;
-
-	for(i = 0; i < (*table)->fieldCounter; free((*table)->fields[i++]));
-	free((*table)->fields);
+	matrix_free((void **) (*table)->fields, (*table)->fieldCounter);
 	free(*table);
 	*table = NULL;
 }

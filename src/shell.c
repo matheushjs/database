@@ -6,21 +6,23 @@
 #include <table_op.h>
 #include <globals.h>
 
+#include <errno.h>	//debugging only
+
 //Comment line below to prevent debug prints.
 //#define NDEBUG
 
 #ifdef NDEBUG
-#define DEBUG(X) printf(X);
+#define DEBUG(...) printf(__VA_ARGS__);
 #else
-#define DEBUG(X)
+#define DEBUG(...)
 #endif
 
 typedef enum {
 	CREATE_TABLE,
 	INSERT_TABLE,
 	INDEX_TABLE,
-	SELECT_TABLE,
 	SORT_TABLE,
+	SELECT_TABLE,
 	PRINT_TABLE,
 	PRINT_ALL_TABLES,
 	PRINT_ALL_INDEXES,
@@ -37,10 +39,10 @@ TABLE_OP parse(char *cmd, char ***s){
 		return INSERT_TABLE;
 	if((*s = match(cmd, "\\s*create\\s+index\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3)))
 		return INDEX_TABLE;
-	if((*s = match(cmd, "\\s*select\\s+(\\w+)\\s+(\\w+)\\s+(\\w+\\.*\\w*)\\s*;\\s*$", 4)))
-		return SELECT_TABLE;
 	if((*s = match(cmd, "\\s*sort\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3)))
 		return SORT_TABLE;
+	if((*s = match(cmd, "\\s*select\\s+(\\w+)\\s+(\\w+)\\s+'\\s*(.*)\\s*'\\s*;\\s*$", 4)))
+		return SELECT_TABLE;
 	if((*s = match(cmd, "\\s*print\\s+table\\s+(\\w+)\\s*;\\s*$", 2)))
 		return PRINT_TABLE;
 	if((*s = match(cmd, "\\s*showalltable(s){0,1}\\s*(;){0,1}\\s*$", 1)))
@@ -81,12 +83,12 @@ void shell(FILE *stream){
 				DEBUG("INDEX_TABLE\n");
 				stats.nIndexes++;
 				table_index(s[1], s[2]);
-				index_sort(s[1], s[2]);
+				table_index_sort(s[1], s[2]);
 				size = 3;
 				break;
 
 			case SELECT_TABLE:
-				DEBUG("SELECT_TABLE\n");
+				DEBUG("SELECT_TABLE {%s} {%s}\n", s[2], s[3]);
 				shell_table_select(s[1], s[2], s[3]);
 				size = 4;
 				break;
@@ -95,7 +97,7 @@ void shell(FILE *stream){
 				DEBUG("SORT_TABLE\n");
 				stats.nSorts++;
 				table_index(s[1], s[2]);
-				index_sort(s[1], s[2]);
+				table_index_sort(s[1], s[2]);
 				size = 3;
 				break;
 				
@@ -131,7 +133,7 @@ void shell(FILE *stream){
 				return;
 
 			case FAILURE:
-				DEBUG("FAILURE\n");
+				DEBUG("FAILURE {%s}\n", cmd);
 				free(cmd);
 				continue;
 		}
@@ -142,7 +144,17 @@ void shell(FILE *stream){
 }
 
 int main(int argc, char *argv[]){
+	FILE *fp;
+	char filename[51];
 	stats_set();
-	shell(stdin);
+	scanf("%s", filename);
+	fp = fopen(filename, "r");
+	if(!fp){
+		fprintf(stderr, "Unable to open file: {%s}\n", filename);
+		perror("ERROR:");
+		exit(0);
+	}
+	shell(fp);
+	fclose(fp);
 	return 0;
 }

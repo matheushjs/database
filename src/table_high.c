@@ -114,7 +114,7 @@ void table_index(char *tablename, char *fieldname){
 }
 
 //Sorts a .idx file for the table 'tablename' that was indexed by field 'fieldname'.
-void index_sort(char *tablename, char *fieldname){
+void table_index_sort(char *tablename, char *fieldname){
 	FILE *fp;
 	char *idx_file;
 	void *cont1, *cont2;
@@ -174,15 +174,13 @@ void record_print(void *record, TABLE *table){
 //Select procedure upon the .idx file.
 //Returns the number of matched records.
 int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, void *value){
-	int lo, hi, cur, offset, nrecords, idx_rSize, count = 0;
+	int lo, hi, cur, offset, nrecords, idx_rSize, nfound = 0;
 	void *data, *record;
 
 	idx_rSize = field->dataSize + sizeof(int);
 	nrecords = get_file_size(idx_fp) / idx_rSize;
 	if(!nrecords) return 0;
 
-	//It makes sense to place a '-1' here, but that will make the binary search fail.
-	//That's due to approximation issues.
 	hi = nrecords-1;
 	lo = 0;
 	for(;;){
@@ -192,36 +190,44 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 		if(type_equal(value, data, field)){
 			free(data);
 
-			//Finds the first occurance of the data.
+			//Finds the first occurence of the data.
 			while(--cur >= 0){
 				data = file_get_record(cur, 0, idx_rSize, idx_fp);
 				if(!type_equal(value, data, field)){ free(data); break; }
 				free(data);
 			};
 			
-			//Prints all data
+			//Prints all data from first occurence to last.
 			record = malloc(table->recordSize);
 			while(++cur < nrecords){
+				//Fetches record on .idx file, which is [value] + [offset of value]
 				data = file_get_record(cur, 0, idx_rSize, idx_fp);
+				
 				if(type_equal(value, data, field)){
+					nfound++;
+					
+					//Store [offset of value]
 					offset = *(int *) (data + field->dataSize);
+					
+					//Reads record from .dat file, corresponding to [offset of value]
 					fseek(dat_fp, offset, SEEK_SET);
 					fread(record, table->recordSize, 1, dat_fp);
-					count++;
+					
+					//Prints
 					record_print(record, table);
 				} else{ free(data); break; }
 				free(data);
 			}
 
 			free(record);
-			return count;
+			return nfound;
 		} else if(type_higher(value, data, field)){
 			lo = cur+1;
 		} else{
 			hi = cur-1;
 		}
 		free(data);
-		if(lo > hi) return count;
+		if(lo > hi) return nfound;
 	}
 }
 
@@ -250,7 +256,7 @@ int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *valu
 	return count;
 }
 
-int select_records(char *tablename, char *fieldname, char *value){
+int table_select_records(char *tablename, char *fieldname, char *value){
 	int bin_count = 0, seq_count = 0;
 	char *idx_file, *dat_file, *tmp_file;
 	FILE *fp, *dat_fp;
