@@ -32,25 +32,6 @@ void *type_data_from_string(char *string, TABLE_FIELD *field){
 	return NULL;
 }
 
-//Given a string s, return the comma-separated substrings as an array of strings.
-//Double commas aren't expected, but will usually return an empty substring for that case.
-//A comma followed by the end of the string will not be considered as an empty substring.
-//Returns NULL if the string given has length 0.
-char **split_commas(char *s, int *count){
-	char **res = NULL;
-	int i, start, len = strlen(s);
-	
-	*count = 0;
-	for(i = 0; i < len; i++){
-		(*count)++;
-		res = (char **) realloc(res, sizeof(char *) * (*count));
-		start = i;
-		while(s[i] != '\0' && s[i] != ',') i++;
-		res[*count-1] = strndup(s+start, i-start);
-	}
-	return res;
-}
-
 //Given a string with multiple substrings separated by commas, return an array of these substrings.
 //For our convenience:
 //	- trailing and leading 'white' characters are ignored.
@@ -62,35 +43,22 @@ char **split_commas(char *s, int *count){
 //	- or any substring of 's' has a not parseable format.
 char **insert_parse_op(char *s, int *count){
 	int i;
-	char **res = NULL, **m, **split = split_commas(s, count);
+	char **res = NULL, **m, **split = split_string(s, ',', count);
 	
-	if(*count) res = (char **) calloc(sizeof(char *), *count);
+	if(*count) res = (char **) malloc(sizeof(char *) * *count);
 	for(i = 0; i < *count; i++){
-		if(!reg_match(split[i], "^.*'.*'.*$")){ //If not within single quotes.
+		if(!reg_match(split[i], "^.*'.*'.*$"))
 			m = reg_parse(split[i], "^\\s*(\\w+\\.?\\w*)\\s*$", 2);
-			if(m){
-				printf("FOUND: {%s}\n", m[1]);
-				res[i] = m[1];
-				free(m[0]), free(m);
-			} else {
-				//exception
-				matrix_free((void **) res, *count);
-				matrix_free((void **) m, 2);
-				res = NULL;
-				break;
-			}
+		else
+			m = reg_parse(split[i], "^\\s*'(.*)'\\s*$", 2);
+			
+		if(m){
+			res[i] = m[1];
+			free(m[0]), free(m);
 		} else {
-			m = reg_parse(split[i], "^\\s*'([^']*)'\\s*$", 2);
-			if(m){
-				res[i] = m[1];
-				free(m[0]), free(m);
-			} else {
-				//exception
-				matrix_free((void**) res, *count);
-				matrix_free((void **) m, 2);
-				res = NULL;
-				break;
-			}
+			matrix_free((void **) res, *count);
+			res = NULL;
+			break;
 		}
 	}
 	
@@ -120,7 +88,7 @@ void shell_table_create(char *tablename, char *params){
 	int index = 0, nfields = 0, *dataSizes = NULL, size = strlen(params);
 
 	do{
-		m = reg_parse(params+index, "^\\s*(\\w+)\\s+(\\w+)\\s*\\[{0,1}\\s*([[:digit:]]*)\\s*\\]{0,1}\\s*[,]{0,1}", 4);
+		m = reg_parse(params+index, "^\\s*(\\w+)\\s+(\\w+)[\\s[]*([[:digit:]]*)\\s*\\]?\\s*,?", 4);
 		if(!m) break;
 		
 		nfields++;

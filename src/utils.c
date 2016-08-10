@@ -56,6 +56,23 @@ char *read_line(FILE *stream) {
 	return line;
 }
 
+//Given a string s, return all substrings delimited by 'sep' as an array of strings.
+//Returns NULL if the string given has length 0.
+char **split_string(char *s, const char sep, int *count){
+	int i, start, len = strlen(s);
+	char **res = NULL;
+	
+	*count = 0;
+	for(i = 0; i < len; i++){
+		(*count)++;
+		res = (char **) realloc(res, sizeof(char *) * (*count));
+		start = i;
+		while(s[i] != '\0' && s[i] != sep) i++;
+		res[*count-1] = strndup(s+start, i-start);
+	}
+	return res;
+}
+
 void matrix_free(void **m, int row){
 	if(!m) return;
 	for(; row; free(m[--row]));
