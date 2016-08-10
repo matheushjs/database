@@ -129,10 +129,10 @@ void shell_table_create(char *tablename, char *params){
 		fieldTypes = (FIELD_TYPE *) realloc(fieldTypes, sizeof(FIELD_TYPE) * nfields);
 		dataSizes = (int *) realloc(dataSizes, sizeof(int) * nfields);
 		
-		type = 	strcmp(m[2], "int") == 0 ? INT :
-			strcmp(m[2], "float") == 0 ? FLOAT :
-			strcmp(m[2], "double") == 0 ? DOUBLE :
-			strcmp(m[2], "char") == 0 ? strlen(m[3]) == 0 ? CHAR : STRING :
+		type = 	reg_match(m[2], "^int$") == 0 ? INT :
+			reg_match(m[2], "^float$") == 0 ? FLOAT :
+			reg_match(m[2], "^double$") == 0 ? DOUBLE :
+			reg_match(m[2], "^char$") == 0 ? strlen(m[3]) == 0 ? CHAR : STRING :
 			-1;
 		fieldTypes[nfields-1] = type;
 		dataSizes[nfields-1] = 	type == STRING ? atoi(m[3])+1 :

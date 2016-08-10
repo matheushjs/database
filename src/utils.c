@@ -51,9 +51,7 @@ char *read_line(FILE *stream) {
 		line = (char *) realloc(line, sizeof(char) * (counter+1));
 		line[counter++] = c;
 	} while (c != '\n');
-
-	line = (char *) realloc(line, sizeof(char) * (counter+1));
-	line[counter++] = '\0';
+	line[counter-1] = '\0';
 
 	return line;
 }

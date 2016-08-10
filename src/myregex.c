@@ -3,15 +3,17 @@
 #include <string.h>
 #include <errno.h>
 #include <regex.h>
+#include <boolean.h>
 
-char **reg_parse(char *string, char *PATTERN, int nvars) {
-	regex_t re;
+char **reg_parse(char *string, char *pattern, int nvars) {
 	int i, start, len, counter = 0;
-	regmatch_t *rm;
 	char **allstrings = NULL;
+	regmatch_t *rm;
+	regex_t re;
 
-	if(regcomp(&re, PATTERN, REG_EXTENDED | REG_ICASE) != 0) {
-		fprintf(stderr, "Failed to compile regex '%s'\n", PATTERN);
+	//Currently ignores letter case.
+	if(regcomp(&re, pattern, REG_EXTENDED | REG_ICASE) != 0) {
+		fprintf(stderr, "Failed to compile regex pattern '%s'\n", pattern);
 		return allstrings;
 	}
 
@@ -20,8 +22,6 @@ char **reg_parse(char *string, char *PATTERN, int nvars) {
 		for(i = 0; i < nvars; i++) {
 			start = rm[i].rm_so;
 			len = rm[i].rm_eo - rm[i].rm_so;
-			//printf("Start: %d End: %d Length: %d\n", 
-			//			rm[i].rm_so, rm[i].rm_eo, len);
 
 			allstrings = (char **) realloc(allstrings, sizeof(char *) * (counter+1));
 			allstrings[counter] = (char *) malloc(sizeof(char)*(len+1));
@@ -34,4 +34,21 @@ char **reg_parse(char *string, char *PATTERN, int nvars) {
 	free(rm);
 	regfree(&re);
 	return allstrings;
+}
+
+//Returns TRUE if 'string' matches pattern.
+bool reg_match(char *string, char *pattern){
+	bool result = FALSE;
+	regmatch_t rm;
+	regex_t re;
+
+	//Ignores letter case.
+	if(regcomp(&re, pattern, REG_EXTENDED | REG_ICASE) != 0) {
+		fprintf(stderr, "Failed to compile regex pattern '%s'\n", pattern);
+		return FALSE;
+	}
+
+	if(regexec(&re, string, 1, &rm, 0) == 0) result = TRUE;
+	regfree(&re);
+	return result;
 }
