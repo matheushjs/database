@@ -67,9 +67,9 @@ char **insert_parse_op(char *s, int *count){
 	
 	if(*count) res = (char **) calloc(sizeof(char *), *count);
 	for(i = 0; i < *count; i++){
-		m = match(split[i], "^\\s*'.*$", 1);
+		m = reg_parse(split[i], "^\\s*'.*$", 1);
 		if(!m){		//If it's a value not within single quotes (numbers or single words/letters).
-			m = match(split[i], "^\\s*(\\w+\\.*\\w*)\\s*$", 2);
+			m = reg_parse(split[i], "^\\s*(\\w+\\.*\\w*)\\s*$", 2);
 			if(m){
 				res[i] = m[1];
 				free(m[0]), free(m);
@@ -82,7 +82,7 @@ char **insert_parse_op(char *s, int *count){
 			}
 		} else {	//If it's a value within single quotes (multiple words or letters).
 			matrix_free((void **) m, 1);
-			m = match(split[i], "^\\s*'([^']*)'\\s*$", 2);
+			m = reg_parse(split[i], "^\\s*'([^']*)'\\s*$", 2);
 			if(m){
 				res[i] = m[1];
 				free(m[0]), free(m);
@@ -122,7 +122,7 @@ void shell_table_create(char *tablename, char *params){
 	int index = 0, nfields = 0, *dataSizes = NULL, size = strlen(params);
 
 	do{
-		m = match(params+index, "^\\s*(\\w+)\\s+(\\w+)\\s*\\[{0,1}\\s*([[:digit:]]*)\\s*\\]{0,1}\\s*[,]{0,1}", 4);
+		m = reg_parse(params+index, "^\\s*(\\w+)\\s+(\\w+)\\s*\\[{0,1}\\s*([[:digit:]]*)\\s*\\]{0,1}\\s*[,]{0,1}", 4);
 		if(!m) break;
 		
 		nfields++;

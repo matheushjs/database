@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <regex.h>
 
-char **match(char *string, char *PATTERN, int nvars) {
+char **reg_parse(char *string, char *PATTERN, int nvars) {
 	regex_t re;
 	int i, start, len, counter = 0;
 	regmatch_t *rm;
