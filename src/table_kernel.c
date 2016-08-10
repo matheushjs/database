@@ -5,8 +5,6 @@
 #include <table_types.h>
 #include <globals.h>
 
-#include <assert.h>
-
 //Returns the size of a single record within a file.
 int table_record_size(TABLE *table){
 	int i, size = 0;
@@ -30,22 +28,23 @@ int table_root_size(TABLE *table){
 	       table->fieldCounter * (int) sizeof(TABLE_FIELD);
 }
 
-//Returns the 'offset' of the data from the field 'fieldname',
+//Returns the 'offset' of the data from the field 'fieldName',
 //relative to the initial position of the whole record.
-int field_offset(TABLE *table, char *fieldname){
+int field_offset(TABLE *table, char *fieldName){
 	int i = 0, size = 0;
-	while(strcmp(fieldname, (char *) table->fields[i]->name) != 0){
+	while(strcmp(fieldName, (char *) table->fields[i]->name) != 0){
 		size += table->fields[i++]->dataSize;
 		if(i == table->fieldCounter) return -1;
 	}
 	return size;
 }
 
-//Creates a table without any fields
+//Creates a table without any fields.
 TABLE *table_alloc(char *name){
-	TABLE *table = (TABLE *) calloc(sizeof(TABLE), 1);
 	int size = strlen(name) + 1;
-	assert(size <= MAX_NAME_SIZE);	
+	TABLE *table; 
+	if(size > MAX_NAME_SIZE) return NULL;
+	table = (TABLE *) calloc(sizeof(TABLE), 1);
 	memcpy(table->name, name, size);
 	table->rootSize = table_root_size_constant();
 	return table;
@@ -61,35 +60,38 @@ void table_destroy(TABLE **table){
 
 //Adds a field to a table. 'dataSize' is the size of the data when it's saved into a file.
 //Note that char[80] should have a dataSize of 81.
-void table_add_field(TABLE *table, char *fieldname, FIELD_TYPE type, int dataSize){
-	TABLE_FIELD *newfield = (TABLE_FIELD *) calloc(sizeof(TABLE_FIELD), 1);
-	
-	newfield->fieldType = type;
-	newfield->dataSize = type == STRING ? dataSize :
+//Returns FALSE on failure (fieldName is too long).
+bool table_add_field(TABLE *table, char *fieldName, FIELD_TYPE type, int dataSize){
+	int nameSize = strlen(fieldName) + 1;
+	TABLE_FIELD *newField;
+
+	if(nameSize > MAX_NAME_SIZE) return FALSE;
+		
+	newField = (TABLE_FIELD *) calloc(sizeof(TABLE_FIELD), 1);
+	newField->fieldType = type;
+	memcpy(newField->name, fieldName, nameSize);
+	newField->dataSize = type == STRING ? dataSize :
 			       type == INT ? sizeof(int) :
 			       type == FLOAT ? sizeof(float) :
 			       type == DOUBLE ? sizeof(double) :
 			       type == CHAR ? sizeof(char) : -1;
-
-	int size = strlen(fieldname) + 1;
-	assert(size <= MAX_NAME_SIZE);
-	memcpy(newfield->name, fieldname, size);
-
-	table->fields = (TABLE_FIELD **)
-		realloc(table->fields, sizeof(TABLE_FIELD *) * ((table->fieldCounter)+1));
-	table->fields[table->fieldCounter++] = newfield;
+	
+	table->fields = (TABLE_FIELD **) realloc(table->fields,
+			sizeof(TABLE_FIELD *) * (table->fieldCounter+1));
+	table->fields[table->fieldCounter++] = newField;
 	table->rootSize += sizeof(TABLE_FIELD);
-	table->recordSize += newfield->dataSize;
+	table->recordSize += newField->dataSize;
+	return TRUE;
 }
 
 //Saves initial table structure to a .dat file.
 void table_to_file(TABLE *table){
-	char *filename;
+	char *fileName;
 	FILE *fp;
 	int i;
 
-	filename = append_string(table->name, ".dat");
-	fp = fopen(filename, "w+");
+	fileName = append_string(table->name, ".dat");
+	fp = fopen(fileName, "w+");
 	
 	//Saves data
 	fwrite(&table->fieldCounter, sizeof(table->fieldCounter), 1, fp);
@@ -97,17 +99,17 @@ void table_to_file(TABLE *table){
 	fwrite(&table->recordSize, sizeof(table->recordSize), 1, fp);
 	for(i = 0; i < table->fieldCounter; i++)
 		fwrite(table->fields[i], sizeof(TABLE_FIELD), 1, fp);
-	free(filename);
+	free(fileName);
 	fclose(fp);
 }
 
 //Creates a table with:
-//	name 'tablename'
+//	name 'tableName'
 //	number of fields 'nfields'
 //	field[i] with name 'names[i]', type 'types[i]' and datasize 'sizes[i]'.
-void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types, int *sizes){
+void table_create(char *tableName, int nfields, char **names, FIELD_TYPE *types, int *sizes){
 	int i;
-	TABLE *table = table_alloc(tablename);
+	TABLE *table = table_alloc(tableName);
 	for(i = 0; i < nfields; i++)
 		table_add_field(table, names[i], types[i], sizes[i]);
 	table_to_file(table);
@@ -115,41 +117,40 @@ void table_create(char *tablename, int nfields, char **names, FIELD_TYPE *types,
 }
 
 //Loads a table from a .dat file
-TABLE *table_from_file(char *tablename){
+TABLE *table_from_file(char *tableName){
 	FILE *fp;
-	char *filename;
+	char *fileName;
 	int i;
-	TABLE *table = table_alloc(tablename);
-	TABLE_FIELD *field;
+	TABLE *table;
 
-	//Appends ".dat" to tablename into a new variable
-	filename = append_string(tablename, ".dat");
-	fp = fopen(filename, "r");
-	if(!fp){ table_destroy(&table); return NULL; };
+	//Appends ".dat" to tableName into a new variable
+	fileName = append_string(tableName, ".dat");
+	fp = fopen(fileName, "r");
+	free(fileName);
+	if(!fp) return NULL;
 
 	//Read data
+	table = table_alloc(tableName);
 	fread(&table->fieldCounter, sizeof(table->fieldCounter), 1, fp);
 	fread(&table->rootSize, sizeof(table->rootSize), 1, fp);
 	fread(&table->recordSize, sizeof(table->recordSize), 1, fp);
 	table->fields = (TABLE_FIELD **) malloc(sizeof(TABLE_FIELD *) * table->fieldCounter);
 	for(i = 0; i < table->fieldCounter; i++){
-		field = (TABLE_FIELD *) malloc(sizeof(TABLE_FIELD) * 1);
-		fread(field, sizeof(TABLE_FIELD), 1, fp);
-		table->fields[i] = field;
+		table->fields[i] = (TABLE_FIELD *) malloc(sizeof(TABLE_FIELD) * 1);
+		fread(table->fields[i], sizeof(TABLE_FIELD), 1, fp);
 	}
-	free(filename);
 	fclose(fp);
 	return table;
 }
 
-//Returns the TABLE_FIELD* of the field 'fieldname'.
-TABLE_FIELD *field_from_file(char *tablename, char *fieldname){
+//Returns the TABLE_FIELD* of the field 'fieldName'.
+TABLE_FIELD *field_from_file(char *tableName, char *fieldName){
 	int i;
-	TABLE *table = table_from_file(tablename);
+	TABLE *table = table_from_file(tableName);
 	TABLE_FIELD *result = NULL;
 
 	for(i = 0; i < table->fieldCounter; i++){
-		if(strcmp(fieldname, table->fields[i]->name) == 0){
+		if(strcmp(fieldName, table->fields[i]->name) == 0){
 			result = (TABLE_FIELD *) malloc(sizeof(TABLE_FIELD));
 			memcpy(result, table->fields[i], sizeof(TABLE_FIELD));
 			break;
@@ -160,21 +161,19 @@ TABLE_FIELD *field_from_file(char *tablename, char *fieldname){
 	return result;
 }
 
-//Appends data from 'tablename.tmp' to 'tablename.dat'
+//Appends data from 'tableName.tmp' to 'tableName.dat'
 //then erases all data in the '.tmp' file.
-void tmp_to_dat(char *tablename){
+void tmp_to_dat(char *tableName){
 	char *dat, *tmp;
-	dat = append_string(tablename, ".dat");
-	tmp = append_string(tablename, ".tmp");
-
+	dat = append_string(tableName, ".dat");
+	tmp = append_string(tableName, ".tmp");
 	append_files(dat, tmp);
-
 	fclose(fopen(tmp, "w"));
 	free(dat);
 	free(tmp);
 }
 
-//Returns TRUE if value1 is higher than value2.
+//Returns TRUE if value1 is higher than value2, considering both as having type field->fieldType.
 bool type_higher(void *value1, void *value2, TABLE_FIELD *field){
 	switch(field->fieldType){
 		case INT:
@@ -198,11 +197,10 @@ bool type_equal(void *value1, void *value2, TABLE_FIELD *field){
 	int len;
 	if(field->fieldType == STRING){
 		len = strlen(value1);
-		return (len == strlen(value2) && !memcmp(value1, value2, len)) ? TRUE : FALSE;
+		return len == strlen(value2) ? memcmp(value1, value2, len) == 0 ? TRUE : FALSE : FALSE;
 	} 
-	return !memcmp(value1, value2, field->dataSize) ? TRUE : FALSE;
+	return memcmp(value1, value2, field->dataSize) == 0 ? TRUE : FALSE;
 }
-
 
 //Prints 'value' based on its type.
 void type_value_print(void *value, TABLE_FIELD *field){
