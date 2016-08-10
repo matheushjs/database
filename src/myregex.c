@@ -42,6 +42,8 @@ bool reg_match(char *string, char *pattern){
 	regmatch_t rm;
 	regex_t re;
 
+	//printf("Matching {%s} with {%s}\n", string, pattern);
+
 	//Ignores letter case.
 	if(regcomp(&re, pattern, REG_EXTENDED | REG_ICASE) != 0) {
 		fprintf(stderr, "Failed to compile regex pattern '%s'\n", pattern);
@@ -49,6 +51,7 @@ bool reg_match(char *string, char *pattern){
 	}
 
 	if(regexec(&re, string, 1, &rm, 0) == 0) result = TRUE;
+	//printf(result ? "Success\n" : "Failure\n");
 	regfree(&re);
 	return result;
 }

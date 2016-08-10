@@ -66,10 +66,10 @@ char **insert_parse_op(char *s, int *count){
 	
 	if(*count) res = (char **) calloc(sizeof(char *), *count);
 	for(i = 0; i < *count; i++){
-		m = reg_parse(split[i], "^\\s*'.*$", 1);
-		if(!m){		//If it's a value not within single quotes (numbers or single words/letters).
-			m = reg_parse(split[i], "^\\s*(\\w+\\.*\\w*)\\s*$", 2);
+		if(!reg_match(split[i], "^.*'.*'.*$")){ //If not within single quotes.
+			m = reg_parse(split[i], "^\\s*(\\w+\\.?\\w*)\\s*$", 2);
 			if(m){
+				printf("FOUND: {%s}\n", m[1]);
 				res[i] = m[1];
 				free(m[0]), free(m);
 			} else {
@@ -79,8 +79,7 @@ char **insert_parse_op(char *s, int *count){
 				res = NULL;
 				break;
 			}
-		} else {	//If it's a value within single quotes (multiple words or letters).
-			matrix_free((void **) m, 1);
+		} else {
 			m = reg_parse(split[i], "^\\s*'([^']*)'\\s*$", 2);
 			if(m){
 				res[i] = m[1];
@@ -129,10 +128,10 @@ void shell_table_create(char *tablename, char *params){
 		fieldTypes = (FIELD_TYPE *) realloc(fieldTypes, sizeof(FIELD_TYPE) * nfields);
 		dataSizes = (int *) realloc(dataSizes, sizeof(int) * nfields);
 		
-		type = 	reg_match(m[2], "^int$") == 0 ? INT :
-			reg_match(m[2], "^float$") == 0 ? FLOAT :
-			reg_match(m[2], "^double$") == 0 ? DOUBLE :
-			reg_match(m[2], "^char$") == 0 ? strlen(m[3]) == 0 ? CHAR : STRING :
+		type = 	reg_match(m[2], "^int$") ? INT :
+			reg_match(m[2], "^float$") ? FLOAT :
+			reg_match(m[2], "^double$") ? DOUBLE :
+			reg_match(m[2], "^char$") ? strlen(m[3]) == 0 ? CHAR : STRING :
 			-1;
 		fieldTypes[nfields-1] = type;
 		dataSizes[nfields-1] = 	type == STRING ? atoi(m[3])+1 :
