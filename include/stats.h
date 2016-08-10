@@ -1,8 +1,5 @@
-#ifndef _GLOBALS_H
-#define _GLOBALS_H
-
-#define ALLTABLES_FILE "alltables.txt"
-#define ALLINDEXES_FILE "allindexes.txt"
+#ifndef _STATS_H
+#define _STATS_H
 
 struct STATS {
 	int nTables,

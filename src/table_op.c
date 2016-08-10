@@ -5,7 +5,6 @@
 #include <table_kernel.h>
 #include <table_high.h>
 #include <myregex.h>
-#include <globals.h>
 
 #include <assert.h> //For debugging
 

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 INCLUDE = -I ./include
-SRC = ./src/shell.c ./src/myregex.c ./src/utils.c ./src/globals.c ./src/table_op.c ./src/table_kernel.c ./src/table_high.c
+SRC = ./src/shell.c ./src/myregex.c ./src/utils.c ./src/stats.c ./src/table_op.c ./src/table_kernel.c ./src/table_high.c
 RM = rm -f
 
 shell: $(SRC)
@@ -14,13 +14,6 @@ all:
 run:
 	make clean
 	./shell
-
-test:
-	make all
-	cp shell ../test_env
-	cd ../test_env
-	sh test.sh
-	sh check.sh
 
 debug:
 	make clean

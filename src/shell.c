@@ -3,7 +3,7 @@
 #include <myregex.h>
 #include <utils.h>
 #include <table_op.h>
-#include <globals.h>
+#include <stats.h>
 
 #include <errno.h>	//debugging only
 

@@ -4,7 +4,6 @@
 #include <utils.h>
 #include <table_types.h>
 #include <boolean.h>
-#include <globals.h>
 
 //Returns the size of a single record within a file.
 int table_record_size(TABLE *table){

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <globals.h>
+#include <stats.h>
 
 struct STATS stats;
 

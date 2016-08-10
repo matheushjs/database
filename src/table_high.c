@@ -4,7 +4,10 @@
 #include <utils.h>
 #include <table_kernel.h>
 #include <table_types.h>
-#include <globals.h>
+#include <stats.h>
+
+#define ALLTABLES_FILE "alltables.txt"
+#define ALLINDEXES_FILE "allindexes.txt"
 
 #include <assert.h>
 
