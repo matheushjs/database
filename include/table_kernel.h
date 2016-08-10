@@ -1,7 +1,7 @@
 #ifndef _TABLE_KERNEL_H
 #define _TABLE_KERNEL_H
 
-#include <utils.h>
+#include <boolean.h>
 #include <table_types.h>
 
 int table_record_size(TABLE *);

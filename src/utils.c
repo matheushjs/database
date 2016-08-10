@@ -3,7 +3,7 @@
 #include <string.h>
 #include <utils.h>
 #include <stdarg.h>
-#include <utils.h>
+#include <boolean.h>
 
 //Given a 'src' string
 //Creates a string that equals 'src' with 'append' appended to the end of it.

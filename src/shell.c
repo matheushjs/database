@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <myregex.h>
 #include <utils.h>
 #include <table_op.h>
