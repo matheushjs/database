@@ -5,107 +5,103 @@
 #include <table_kernel.h>
 #include <table_types.h>
 #include <stats.h>
+#include <boolean.h>
 
 #define ALLTABLES_FILE "alltables.txt"
 #define ALLINDEXES_FILE "allindexes.txt"
 
-#include <assert.h>
-
-void alltables_add(char *tablename){
+void alltables_add(char *tableName){
 	FILE *fp = fopen(ALLTABLES_FILE, "r+");
 	if(!fp) fp = fopen(ALLTABLES_FILE, "w");
-	append_to_file(tablename, strlen(tablename)+1, fp);
+	append_to_file(tableName, strlen(tableName)+1, fp);
 	fclose(fp);
 }
 
-void allindexes_add(char *tablename, char *fieldname){
+void allindexes_add(char *tableName, char *fieldName){
 	FILE *fp = fopen(ALLINDEXES_FILE, "r+");
 	if(!fp) fp = fopen(ALLINDEXES_FILE, "w");
-	append_to_file(tablename, strlen(tablename)+1, fp);
-	append_to_file(fieldname, strlen(fieldname)+1, fp);
+	append_to_file(tableName, strlen(tableName)+1, fp);
+	append_to_file(fieldName, strlen(fieldName)+1, fp);
 	fclose(fp);
 }
-//Given the name of a table,
-//an array of fieldnames in a certain order,
-//and an array of values in the same convenient order,
+
+//Given the name of a table, an array of fieldNames in any order,
+//and an array of values in an order compliant with the fieldNames' order,
 //insert these values to the .tmp file of the table.
-//e.g
-//	tablename = "people" with fields {name, age, ID}
-//	fieldnames = {"name", "ID", "age"}
-//	values = {"Matheus", "162", "20"}
-//adds value "Matheus" to field "name" of table "people"
-//     value "20" to field "age"
-//     value "162" to field "ID"
-//In that order.
-void table_insert(char *tablename, char **fieldnames, void **values){
+//The insertion is done following the original order of the table's fields.
+void table_insert(char *tableName, char **fieldNames, void **values){
 	int i, j;
-	TABLE *table = table_from_file(tablename);
-	TABLE_FIELD *curr_field;
-	char *filename;
+	char *fileName;
 	FILE *fp;
+	TABLE *table = table_from_file(tableName);
+	TABLE_FIELD *curr_field;
 
 	stats.nInserts++;
 
-	filename = append_string(tablename, ".tmp");
-	fp = fopen(filename, "r+");
-	if(!fp) fp = fopen(filename, "w+");
-	assert(fp);
+	fileName = append_string(tableName, ".tmp");
+	fp = fopen(fileName, "r+");
+	if(!fp) fp = fopen(fileName, "w+");
 
 	for(i = 0; i < table->fieldCounter; i++){
 		curr_field = table->fields[i];
 		for(j = 0; j < table->fieldCounter; j++){
-			if(strcmp(curr_field->name, fieldnames[j]) == 0){
+			if(strcmp(curr_field->name, fieldNames[j]) == 0){
 				append_to_file(values[j], curr_field->dataSize, fp);
 				break;
 			}
 		}
 	}
 	fclose(fp);
-	free(filename);
+	free(fileName);
 	table_destroy(&table);
 }
 
-//Creates an index for the table 'tablename', based on the field 'fieldname'.
-//The index file '.idx' contains all values of field 'fieldname' and their positions in the '.dat' file.
-void table_index(char *tablename, char *fieldname){
-	int i, pos, aux, size, dat_size;
+//Creates an index for the table 'tableName', based on the field 'fieldName'.
+//The index file '.idx' contains all values of field 'fieldName' and their offsets in the '.dat' file.
+bool table_index(char *tableName, char *fieldName){
+	int i, pos, offset, size, dat_size;
 	char *dat_file, *idx_file, *data;
 	FILE *dat_fp, *idx_fp;
-	TABLE *table = table_from_file(tablename);
+	TABLE *table = table_from_file(tableName);
 
+	if(!table) return FALSE;
+
+	//Find the order in which the field appears.
+	for(pos = 0; pos < table->fieldCounter; pos++)
+		if(strcmp(table->fields[pos]->name, fieldName) == 0) break;
+	if(pos == table->fieldCounter){
+		table_destroy(&table);
+		return FALSE;
+	}
+	
 	//Moves all data from the '.tmp' file to the '.dat' file.
-	tmp_to_dat(tablename);
+	tmp_to_dat(tableName);
 
 	//Gets size of '.dat' file and put file cursor
 	//after the initial data about the TABLE struct
-	dat_file = append_string(tablename, ".dat");
+	dat_file = append_string(tableName, ".dat");
 	dat_fp = fopen(dat_file, "r");
 	dat_size = get_file_size(dat_fp);
 	free(dat_file);
 	fseek(dat_fp, table->rootSize, SEEK_SET);
 
-	//Find the order in which the field appear.
-	for(pos = 0; pos < table->fieldCounter; pos++)
-		if(strcmp(table->fields[pos]->name, fieldname) == 0) break;
-
 	//Creates the .idx file.
-	idx_file = append_strings(4, tablename, "-", fieldname, ".idx");
-	if(!file_exist(idx_file)) allindexes_add(tablename, fieldname);
+	idx_file = append_strings(4, tableName, "-", fieldName, ".idx");
+	if(!file_exist(idx_file)) allindexes_add(tableName, fieldName);
 	idx_fp = fopen(idx_file, "w+");
 	free(idx_file);
 	
 	//Indexing procedure.
-	while(ftell(dat_fp) < dat_size){
-		aux = ftell(dat_fp);
+	while((offset = ftell(dat_fp)) < dat_size){
 		for(i = 0; i < table->fieldCounter; i++){
 			size = table->fields[i]->dataSize;
 			if(i == pos){
 				data = (char *) malloc(size);
 				fread(data, size, 1, dat_fp);
 				fwrite(data, size, 1, idx_fp);
-				fwrite(&aux, sizeof(aux), 1, idx_fp);
+				fwrite(&offset, sizeof(offset), 1, idx_fp);
 				free(data);
-			} else{
+			} else {
 				fseek(dat_fp, size, SEEK_CUR);
 			}
 		}
@@ -114,20 +110,23 @@ void table_index(char *tablename, char *fieldname){
 	table_destroy(&table);
 	fclose(dat_fp);
 	fclose(idx_fp);
+	return TRUE;
 }
 
-//Sorts a .idx file for the table 'tablename' that was indexed by field 'fieldname'.
-void table_index_sort(char *tablename, char *fieldname){
-	FILE *fp;
+//Sorts a .idx file for the table 'tableName' that was indexed by field 'fieldName'.
+bool table_index_sort(char *tableName, char *fieldName){
+	int recordSize, nrecords, i, j;
 	char *idx_file;
 	void *cont1, *cont2;
-	int recordSize, nrecords, i, j;
-	TABLE_FIELD *field = field_from_file(tablename, fieldname);
-	
+	FILE *fp;
+	TABLE_FIELD *field = field_from_file(tableName, fieldName);
+
+	if(!field) return FALSE;
+
 	recordSize = field->dataSize + sizeof(int);
 
 	//Opens the .idx file
-	idx_file = append_strings(4, tablename, "-", fieldname, ".idx");
+	idx_file = append_strings(4, tableName, "-", fieldName, ".idx");
 	fp = fopen(idx_file, "r+");
 	free(idx_file);
 
@@ -160,12 +159,12 @@ void table_index_sort(char *tablename, char *fieldname){
 	free(cont2);
 	free(field);
 	fclose(fp);
+	return TRUE;
 }
 
 //Prints a record from the table 'table'.
 void record_print(void *record, TABLE *table){
 	int i, pos = 0;
-
 	for(i = 0; i < table->fieldCounter; i++){
 		type_value_print(record+pos, table->fields[i]);
 		pos += table->fields[i]->dataSize;
@@ -259,7 +258,9 @@ int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *valu
 	return count;
 }
 
-int table_select_records(char *tablename, char *fieldname, char *value){
+//Applies 'select' procedure upon table 'tableName'.
+//Returns number of records found.
+int table_select_records(char *tableName, char *fieldName, char *value){
 	int bin_count = 0, seq_count = 0;
 	char *idx_file, *dat_file, *tmp_file;
 	FILE *fp, *dat_fp;
@@ -267,12 +268,17 @@ int table_select_records(char *tablename, char *fieldname, char *value){
 	stats.nSelects++;
 
 	//Prepare table and field.
-	TABLE *table = table_from_file(tablename);
-	TABLE_FIELD *field = field_from_file(tablename, fieldname);
-	
+	TABLE *table = table_from_file(tableName);
+	TABLE_FIELD *field = field_from_file(tableName, fieldName);
+	if(!table || !field){
+		table_destroy(&table);
+		free(field);
+		return -1;
+	}
+
 	//Search .dat or .idx files.
-	idx_file = append_strings(4, tablename, "-", fieldname, ".idx");
-	dat_file = append_string(tablename, ".dat");
+	idx_file = append_strings(4, tableName, "-", fieldName, ".idx");
+	dat_file = append_string(tableName, ".dat");
 	fp = fopen(idx_file, "r");
 	dat_fp = fopen(dat_file, "r");
 	free(idx_file);
@@ -284,7 +290,7 @@ int table_select_records(char *tablename, char *fieldname, char *value){
 		seq_count = file_select(table, field, dat_fp, table->rootSize, value);
 	}
 
-	tmp_file = append_string(tablename, ".tmp");
+	tmp_file = append_string(tableName, ".tmp");
 	fp = fopen(tmp_file, "r");
 	free(tmp_file);
 	if(fp) seq_count += file_select(table, field, fp, 0, value);
@@ -309,7 +315,7 @@ void table_print_header(TABLE *table){
 	if(table->fieldCounter) printf("|  ");
 	for(i = 0; i < table->fieldCounter; i++)
 		printf("%s  |  ", (char *) table->fields[i]->name);
-	printf("\n");	
+	printf("\n");
 }
 
 char *type_to_string(FIELD_TYPE ftype){
@@ -343,11 +349,11 @@ void table_print_info(TABLE *table){
 //	'ftype' - DAT if from a .dat file, TMP if from a .tmp file.
 void ftype_table_print(TABLE *table, FILE_TYPE ftype){
 	int i, init = (ftype == DAT ? table_root_size(table) : 0);
-	char *filename = append_string((char *) table->name, (ftype == DAT ? ".dat" : ".tmp"));
-	FILE *fp = fopen(filename, "r");
+	char *fileName = append_string((char *) table->name, (ftype == DAT ? ".dat" : ".tmp"));
+	FILE *fp = fopen(fileName, "r");
 	void *record;
 
-	free(filename);
+	free(fileName);
 	if(!fp) return;
 
 	for(i = 0; ; i++){
@@ -360,8 +366,8 @@ void ftype_table_print(TABLE *table, FILE_TYPE ftype){
 }
 
 //Prints all records from a table, from .dat and .tmp files.
-void table_print(char *tablename){
-	TABLE *table = table_from_file(tablename);
+void table_print(char *tableName){
+	TABLE *table = table_from_file(tableName);
 
 	table_print_header(table);
 	ftype_table_print(table, DAT);
@@ -370,8 +376,12 @@ void table_print(char *tablename){
 	table_destroy(&table);
 }
 
+//Prints information about all tables in current workspace.
 void alltables_print(){
 	FILE *fp = fopen(ALLTABLES_FILE, "r");
+	char tableName[MAX_NAME_SIZE];
+	int i;
+	TABLE *table;
 	
 	stats.nSAT++;	//nShow All Tables
 
@@ -379,22 +389,21 @@ void alltables_print(){
 		printf("There are no tables.");
 		return;
 	}
-
-	char tablename[MAX_NAME_SIZE];
-	int i;
-	TABLE *table;
 	for(;;){
-		if(file_EOF(fp)) break;;
-		for(i=0; (tablename[i] = fgetc(fp)) != '\0'; i++);
-		table = table_from_file(tablename);
+		if(file_EOF(fp)) break;
+		for(i=0; (tableName[i] = fgetc(fp)) != '\0'; i++);
+		table = table_from_file(tableName);
 		table_print_info(table);
 		table_destroy(&table);
 	}
 	fclose(fp);
 }
 
+//Prints information about all indexes in current workspace.
 void allindexes_print(){
 	FILE *fp = fopen(ALLINDEXES_FILE, "r");
+	char string[MAX_NAME_SIZE];
+	int i;
 	
 	stats.nSAI++;	//nShow All Indexes
 
@@ -402,9 +411,6 @@ void allindexes_print(){
 		printf("There are no indexes.");
 		return;
 	}
-
-	char string[MAX_NAME_SIZE];
-	int i;
 	for(;;){
 		if(file_EOF(fp)) break;
 		printf("\nIndex Information\n");

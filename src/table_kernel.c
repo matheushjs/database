@@ -146,8 +146,9 @@ TABLE *table_from_file(char *tableName){
 //Returns the TABLE_FIELD* of the field 'fieldName'.
 TABLE_FIELD *field_from_file(char *tableName, char *fieldName){
 	int i;
-	TABLE *table = table_from_file(tableName);
 	TABLE_FIELD *result = NULL;
+	TABLE *table = table_from_file(tableName);
+	if(!table) return NULL;
 
 	for(i = 0; i < table->fieldCounter; i++){
 		if(strcmp(fieldName, table->fields[i]->name) == 0){
