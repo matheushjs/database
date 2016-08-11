@@ -69,8 +69,8 @@ char **insert_parse_op(char *s, int *count){
 //Converts each 'value_strings[i]', which is a value related to the field 'fields[i]', to its proper type.
 void **strings_to_values(char *tablename, char **fields, char **value_strings, int nvalues){
 	int i;
-	TABLE_FIELD *curr_field;
 	void **result = malloc(sizeof(void *) * nvalues);
+	TABLE_FIELD *curr_field;
 	for(i = 0; i < nvalues; i++){
 		curr_field = field_from_file(tablename, fields[i]);
 		result[i] = type_data_from_string(value_strings[i], curr_field);
@@ -80,12 +80,12 @@ void **strings_to_values(char *tablename, char **fields, char **value_strings, i
 }
 
 //Creates a table with name 'tablename' and fields specified by the half-parsed string 'params'.
-//'params' would be a list of comma-separated of strings that follow the format "{fieldname} {fieldtype} {[datasize]?}"
+//'params' would be a list of comma-separated strings that follow the format "{fieldname} {fieldtype} {[datasize]?}"
 //e.g: "code int, name char[80], age double, height float"
 void shell_table_create(char *tablename, char *params){
-	FIELD_TYPE type, *fieldTypes;
 	int i, nfields, *dataSizes;
 	char **m, **fieldNames, **split = split_string(params, ',', &nfields);
+	FIELD_TYPE type, *fieldTypes;
 
 	fieldNames = (char **) malloc(sizeof(char *) * nfields);
 	fieldTypes = (FIELD_TYPE *) malloc(sizeof(FIELD_TYPE) * nfields);
@@ -132,7 +132,7 @@ void shell_table_insert(char *tablename, char *fields_string, char *values_strin
 		values = strings_to_values(tablename, fields, values_sp, countv);
 		table_insert(tablename, fields, values);
 	} else {
-		printf("There was a problem parsing the given command. Try again.\n");
+		fprintf(stderr, "There was a problem parsing the given lists of values and fields.\n");
 	}
 
 	matrix_free((void **) fields, countv);
