@@ -18,5 +18,6 @@ void *file_get_record(int, int, int, FILE *);
 char *lowercase(char *);
 void to_lowercase(char *);
 bool icase_strcmp(char *, char *);
+void die(const char *);
 
 #endif

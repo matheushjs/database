@@ -4,6 +4,7 @@
 #include <utils.h>
 #include <stdarg.h>
 #include <boolean.h>
+#include <errno.h>
 
 //Given a 'src' string
 //Creates a string that equals 'src' with 'append' appended to the end of it.
@@ -170,4 +171,11 @@ bool icase_strcmp(char *s, char *t){
 	if(memcmp(lower1, lower2, len) == 0) res = TRUE;
 	free(lower1), free(lower2);
 	return res;
+}
+
+//Terminates program after printing error messages.
+void die(const char *message){
+	fprintf(stderr, message);
+	perror("ERROR:");
+	exit(0);
 }
