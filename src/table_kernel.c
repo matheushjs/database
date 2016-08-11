@@ -193,12 +193,11 @@ bool type_higher(void *value1, void *value2, TABLE_FIELD *field){
 }
 
 //Returns TRUE if value1 is equal to value2.
+//STRING comparison is case insensitive.
+//CHAR comparison is case sensitive.
 bool type_equal(void *value1, void *value2, TABLE_FIELD *field){
-	int len;
-	if(field->fieldType == STRING){
-		len = strlen(value1);
-		return len == strlen(value2) ? memcmp(value1, value2, len) == 0 ? TRUE : FALSE : FALSE;
-	} 
+	if(field->fieldType == STRING)
+		return icase_strcmp((char *) value1, (char *) value2);
 	return memcmp(value1, value2, field->dataSize) == 0 ? TRUE : FALSE;
 }
 

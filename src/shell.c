@@ -5,13 +5,22 @@
 #include <table_op.h>
 #include <stats.h>
 
+//Comment below to ignore case on names of tables or table_fields.
+//#define ICASE
+
+#ifdef ICASE
+#define CHK_CASE(X) to_lowercase(X)
+#else
+#define CHK_CASE(X)
+#endif
+
 #include <errno.h>	//debugging only
 
 //Comment line below to prevent debug prints.
 //#define NDEBUG
 
 #ifdef NDEBUG
-#define DEBUG(...) printf(__VA_ARGS__);
+#define DEBUG(...) printf(__VA_ARGS__)
 #else
 #define DEBUG(...)
 #endif
@@ -66,6 +75,8 @@ void shell(FILE *stream){
 		switch(parse(cmd, &s)){
 			case CREATE_TABLE:
 				DEBUG("CREATE_TABLE\n");
+				CHK_CASE(s[1]);
+				CHK_CASE(s[2]);
 				shell_table_create(s[1], s[2]);
 				alltables_add(s[1]);
 				stats.nTables++;
@@ -74,12 +85,16 @@ void shell(FILE *stream){
 			
 			case INSERT_TABLE:
 				DEBUG("INSERT_TABLE\n");
+				CHK_CASE(s[1]);
+				CHK_CASE(s[2]);
 				shell_table_insert(s[1], s[2], s[3]);
 				size = 4;
 				break;
 
 			case INDEX_TABLE:
 				DEBUG("INDEX_TABLE\n");
+				CHK_CASE(s[1]);
+				CHK_CASE(s[2]);
 				stats.nIndexes++;
 				table_index(s[1], s[2]);
 				table_index_sort(s[1], s[2]);
@@ -88,12 +103,16 @@ void shell(FILE *stream){
 
 			case SELECT_TABLE:
 				DEBUG("SELECT_TABLE {%s} {%s}\n", s[2], s[3]);
+				CHK_CASE(s[1]);
+				CHK_CASE(s[2]);
 				shell_table_select(s[1], s[2], s[3]);
 				size = 4;
 				break;
 
 			case SORT_TABLE:
 				DEBUG("SORT_TABLE\n");
+				CHK_CASE(s[1]);
+				CHK_CASE(s[2]);
 				stats.nSorts++;
 				table_index(s[1], s[2]);
 				table_index_sort(s[1], s[2]);
@@ -102,6 +121,7 @@ void shell(FILE *stream){
 				
 			case PRINT_TABLE:
 				DEBUG("PRINT_TABLE\n");
+				CHK_CASE(s[1]);
 				table_print(s[1]);
 				size = 2;
 				break;

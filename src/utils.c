@@ -142,3 +142,32 @@ void *file_get_record(int index, int initOffset, int recordSize, FILE *fp){
 	if(fread(record, recordSize, 1, fp) != 1){free(record); return NULL;}
 	return record;
 }
+
+//Turns every alphabetical character in 's' to lowercase.
+//Returns the resulting string in another region of memory.
+char *lowercase(char *s){
+	int i, size = strlen(s);
+	char *r = malloc(sizeof(char) * size);
+	for(i = 0; i < size; i++)
+		r[i] = (s[i] > 64 && s[i] < 91) ? s[i] + 32 : s[i];
+	return r;
+}
+
+//Turns every alphabetical character in 's' to lowercase.
+void to_lowercase(char *s){
+	for(; *s != '\0'; s++)
+		*s = (*s > 64 && *s < 91) ? *s + 32 : *s;
+}
+
+//Ignore-case string comparison.
+bool icase_strcmp(char *s, char *t){
+	char *lower1, *lower2;
+	int len = strlen(s);
+	bool res = FALSE;
+	if(len != strlen(t)) return FALSE;
+	lower1 = lowercase(s);
+	lower2 = lowercase(t);
+	if(memcmp(lower1, lower2, len) == 0) res = TRUE;
+	free(lower1), free(lower2);
+	return res;
+}
