@@ -20,6 +20,7 @@ char *append_string(const char *src, const char *append){
 	return filename;
 }
 
+//Appends multiple strings.
 char *append_strings(int nstrings, ...){
 	int i, index = 0, len;
 	char *result = NULL, *curr;
@@ -132,15 +133,15 @@ bool file_EOF(FILE *fp){
 }
 
 //Beginning on position initOffset, the file pointed to by 'fp' has a sequence
-//of records of a fixed size 'recordSize'.
+//	of records of a fixed size 'recordSize'.
 //This function returns the index-th record from such sequence.
 //	index		- The index of the record to be retrieved.
-//	initOffset	- Offset for the beginning of the sequence.
-//	lineSize 	- Size, in bytes, of each line of the sequence.
+//	initOffset	- Offset for the beginning of the sequence of records.
+//	recordSize 	- Size, in bytes, of each record on the sequence.
 void *file_get_record(int index, int initOffset, int recordSize, FILE *fp){
 	void *record = malloc(recordSize);
 	fseek(fp, initOffset + recordSize*index, SEEK_SET);
-	if(fread(record, recordSize, 1, fp) != 1){free(record); return NULL;}
+	if(fread(record, recordSize, 1, fp) != 1){ free(record); return NULL; }
 	return record;
 }
 

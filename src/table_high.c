@@ -413,7 +413,7 @@ void allindexes_print(){
 	}
 	for(;;){
 		if(file_EOF(fp)) break;
-		printf("\nIndex Information\n");
+		printf("\nIndex information\n");
 		for(i = 0; (string[i] = fgetc(fp)) != '\0'; i++);
 		printf("\tTablename: %s\n", string);
 		for(i = 0; (string[i] = fgetc(fp)) != '\0'; i++);
