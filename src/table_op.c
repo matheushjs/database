@@ -83,38 +83,34 @@ void **strings_to_values(char *tablename, char **fields, char **value_strings, i
 //'params' would be a list of comma-separated of strings that follow the format "{fieldname} {fieldtype} {[datasize]?}"
 //e.g: "code int, name char[80], age double, height float"
 void shell_table_create(char *tablename, char *params){
-	char **m, **fieldNames = NULL;
-	FIELD_TYPE type, *fieldTypes = NULL;
-	int index = 0, nfields = 0, *dataSizes = NULL, size = strlen(params);
+	FIELD_TYPE type, *fieldTypes;
+	int i, nfields, *dataSizes;
+	char **m, **fieldNames, **split = split_string(params, ',', &nfields);
 
-	do{
-		m = reg_parse(params+index, "^\\s*(\\w+)\\s+(\\w+)[\\s[]*([[:digit:]]*)\\s*\\]?\\s*,?", 4);
+	fieldNames = (char **) malloc(sizeof(char *) * nfields);
+	fieldTypes = (FIELD_TYPE *) malloc(sizeof(FIELD_TYPE) * nfields);
+	dataSizes = (int *) malloc(sizeof(int) * nfields);
+	for(i = 0; i < nfields; i++){
+		m = reg_parse(split[i], "^\\s*(\\w+)\\s+(\\w+)[\\s[]*([0-9]*)\\s*\\]?\\s*$", 4);
 		if(!m) break;
-		
-		nfields++;
-		fieldNames = (char **) realloc(fieldNames, sizeof(char *) * nfields);
-		fieldTypes = (FIELD_TYPE *) realloc(fieldTypes, sizeof(FIELD_TYPE) * nfields);
-		dataSizes = (int *) realloc(dataSizes, sizeof(int) * nfields);
-		
+	
 		type = 	reg_match(m[2], "^int$") ? INT :
 			reg_match(m[2], "^float$") ? FLOAT :
 			reg_match(m[2], "^double$") ? DOUBLE :
 			reg_match(m[2], "^char$") ? strlen(m[3]) == 0 ? CHAR : STRING :
 			-1;
-		fieldTypes[nfields-1] = type;
-		dataSizes[nfields-1] = 	type == STRING ? atoi(m[3])+1 :
-			   		type == CHAR ? sizeof(char) :
-			   		type == INT ? sizeof(int) :
-			   		type == FLOAT ? sizeof(float) :
-					type == DOUBLE ? sizeof(double) : -1;
-		fieldNames[nfields-1] = strdup(m[1]);
-		
-		index += strlen(m[0]);
+		fieldTypes[i] = type;
+		dataSizes[i] = 	type == STRING ? atoi(m[3])+1 :
+			   	type == CHAR ? sizeof(char) :
+			   	type == INT ? sizeof(int) :
+			   	type == FLOAT ? sizeof(float) :
+				type == DOUBLE ? sizeof(double) : -1;
+		fieldNames[i] = strdup(m[1]);
 		matrix_free((void **) m, 4);
-	} while(index < size);
-
+	}
 	table_create(tablename, nfields, fieldNames, fieldTypes, dataSizes);
 
+	matrix_free((void **) split, nfields);
 	matrix_free((void **) fieldNames, nfields);
 	free(fieldTypes);
 	free(dataSizes);
