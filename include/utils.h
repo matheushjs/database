@@ -15,6 +15,8 @@ int get_file_size(FILE *);
 bool file_exist(char *);
 bool file_EOF(FILE *);
 void *file_get_record(int, int, int, FILE *);
+void file_get_record_ovl(void *, int, int, int, FILE *);
+void file_save_record(void *, int, int, int, FILE *);
 char *lowercase(char *);
 void to_lowercase(char *);
 bool icase_strcmp(char *, char *);

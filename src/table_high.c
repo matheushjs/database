@@ -136,18 +136,14 @@ bool table_index_sort(char *tableName, char *fieldName){
 	cont1 = malloc(recordSize);
 	cont2 = malloc(recordSize);
 	for(i = 0; i < nrecords - 1; i++){
-		fseek(fp, recordSize*i, SEEK_SET);
-		fread(cont1, recordSize, 1, fp);
+		file_get_record_ovl(cont1, i, 0, recordSize, fp);
 		for(j = i + 1; j < nrecords; j++){
-			fseek(fp, recordSize*j, SEEK_SET);
-			fread(cont2, recordSize, 1, fp);
+			file_get_record_ovl(cont2, j, 0, recordSize, fp);
 			if(type_higher(cont1, cont2, field) ||   //lower records first.
 			   (type_equal(cont1, cont2, field) &&   //newer records first (lower offset in .dat file).
 			   *(int *)(cont1+field->dataSize) > *(int *)(cont2+field->dataSize))){
-				fseek(fp, recordSize*i, SEEK_SET);
-				fwrite(cont2, recordSize, 1, fp);
-				fseek(fp, recordSize*j, SEEK_SET);
-				fwrite(cont1, recordSize, 1, fp);
+				file_save_record(cont2, i, 0, recordSize, fp);
+				file_save_record(cont1, j, 0, recordSize, fp);
 				
 				//Updates cont1 with the switched value
 				memcpy(cont1, cont2, recordSize);

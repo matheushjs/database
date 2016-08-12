@@ -145,6 +145,19 @@ void *file_get_record(int index, int initOffset, int recordSize, FILE *fp){
 	return record;
 }
 
+//Same as file_get_record(), but stores record in 'record'.
+void file_get_record_ovl(void *record, int index, int initOffset, int recordSize, FILE *fp){
+	fseek(fp, initOffset + recordSize*index, SEEK_SET);
+	fread(record, recordSize, 1, fp);
+}
+
+//Inverse of file_get_record functions.
+//Saves record to file.
+void file_save_record(void *record, int index, int initOffset, int recordSize, FILE *fp){
+	fseek(fp, initOffset + recordSize*index, SEEK_SET);
+	fwrite(record, recordSize, 1, fp);
+}
+
 //Turns every alphabetical character in 's' to lowercase.
 //Returns the resulting string in another region of memory.
 char *lowercase(char *s){
