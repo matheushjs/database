@@ -111,7 +111,7 @@ void append_files(char *dest, char *src){
 	free(data);
 }
 
-int get_file_size(FILE *fp){
+int file_size(FILE *fp){
 	int result;
 	fseek(fp, 0, SEEK_END);
 	result = (int) ftell(fp);

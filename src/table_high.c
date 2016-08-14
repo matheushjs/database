@@ -81,7 +81,7 @@ bool table_index(char *tableName, char *fieldName){
 	//after the initial data about the TABLE struct
 	dat_file = append_string(tableName, ".dat");
 	dat_fp = fopen(dat_file, "r");
-	dat_size = get_file_size(dat_fp);
+	dat_size = file_size(dat_fp);
 	free(dat_file);
 	fseek(dat_fp, table->rootSize, SEEK_SET);
 
@@ -117,7 +117,7 @@ bool table_index(char *tableName, char *fieldName){
 bool table_index_sort(char *tableName, char *fieldName){
 	int recordSize, nrecords, i, j;
 	char *idx_file;
-	void *cont1, *cont2;
+	void *curr, *aux;
 	FILE *fp;
 	TABLE_FIELD *field = field_from_file(tableName, fieldName);
 
@@ -130,29 +130,26 @@ bool table_index_sort(char *tableName, char *fieldName){
 	fp = fopen(idx_file, "r+");
 	free(idx_file);
 
-	nrecords = get_file_size(fp)/recordSize;
+	nrecords = file_size(fp)/recordSize;
 
-	//Create containers and start sorting procedure.
-	cont1 = malloc(recordSize);
-	cont2 = malloc(recordSize);
-	for(i = 0; i < nrecords - 1; i++){
-		file_get_record_ovl(cont1, i, 0, recordSize, fp);
-		for(j = i + 1; j < nrecords; j++){
-			file_get_record_ovl(cont2, j, 0, recordSize, fp);
-			if(type_higher(cont1, cont2, field) ||   //lower records first.
-			   (type_equal(cont1, cont2, field) &&   //newer records first (lower offset in .dat file).
-			   *(int *)(cont1+field->dataSize) > *(int *)(cont2+field->dataSize))){
-				file_save_record(cont2, i, 0, recordSize, fp);
-				file_save_record(cont1, j, 0, recordSize, fp);
-				
-				//Updates cont1 with the switched value
-				memcpy(cont1, cont2, recordSize);
-			}
+	//Create containers and start insertion-sorting procedure.
+	curr = malloc(recordSize);
+	aux = malloc(recordSize);
+	for(i = 1; i < nrecords; i++){
+		file_get_record_ovl(curr, (j = i), 0, recordSize, fp);
+		while(--j >= 0){
+			file_get_record_ovl(aux, j, 0, recordSize, fp);
+			if(type_higher(aux, curr, field) || //ensures lower records first.
+			  (type_equal(aux, curr, field) &&  //ensures earlier records first.
+			   *(int *)(aux+field->dataSize) > *(int *)(curr+field->dataSize))){
+				file_save_record(aux, j+1, 0, recordSize, fp);
+			} else break;
 		}
+		file_save_record(curr, j+1, 0, recordSize, fp);
 	}
-
-	free(cont1);
-	free(cont2);
+	
+	free(aux);
+	free(curr);
 	free(field);
 	fclose(fp);
 	return TRUE;
@@ -176,7 +173,7 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 	void *data, *record;
 
 	idx_rSize = field->dataSize + sizeof(int);
-	nrecords = get_file_size(idx_fp) / idx_rSize;
+	nrecords = file_size(idx_fp) / idx_rSize;
 	if(!nrecords) return 0;
 
 	hi = nrecords-1;
@@ -236,7 +233,7 @@ int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *valu
 	void *data = malloc(table->recordSize);
 
 	field_init = field_offset(table, (char *) field->name);
-	nrecords = (get_file_size(fp) - init) / table->recordSize;
+	nrecords = (file_size(fp) - init) / table->recordSize;
 
 	for(i = 0; i < nrecords; i++){
 		offset = init + i*table->recordSize;

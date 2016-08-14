@@ -27,7 +27,7 @@ insert into PeSSoa (codigo, nome, idade, sexo) values (4, 'carlos almeida', 6.21
 insert into PeSSoa (codigo, nome, idade, sexo) values (2, 'joaquim jose', 125.56, 'M');
 select PeSSoa codigo 1;
 statistics
-insert into PeSSoa (codigo, nome, idade, sexo) values (15, 'josefina say', 72.72, 'F'); 
+insert into PeSSoa (codigo, nome, idade, sexo) values (15, 'amanda say', 72.72, 'F'); 
 sort PeSSoa(codigo);
 sort PeSSoa(nome);
 statistics

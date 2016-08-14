@@ -11,7 +11,7 @@ void matrix_free(void **, int);
 void append_to_file(void *, int, FILE *);
 void append_files(char *, char *);
 char *append_strings(int, ...);
-int get_file_size(FILE *);
+int file_size(FILE *);
 bool file_exist(char *);
 bool file_EOF(FILE *);
 void *file_get_record(int, int, int, FILE *);
