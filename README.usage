@@ -10,3 +10,11 @@ showalltables;
 showallindexes;
 statistics;
 quit;
+
+
+CASE-SENSITIVITY:
+
+Command tokens (e.g. 'create table' 'select' etc) are not case-sensitive (myregex.h).
+On shell.c, if ICASE is defined, all <names of tables> and <names of fields> will be treated as being lowercase.
+On table_kernel.c, it is defined that comparison of <strings> is also not case-sensitive.
+	<char> comparison is case sensitive.

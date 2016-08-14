@@ -1,0 +1,25 @@
+myregex.c myregex.h:
+	Functions to provide easy use of regular expressions.
+
+utils.c utils.h:
+	Functions to provide useful general-purpose functionalities to the code.
+
+table_kernel.c table_kernel.h:
+	Least abstract functions related to manipulating tables.
+
+table_high.c table_high.h:
+	Higher level functions related to manipulating tables.
+
+table_op.c table_op.h:
+	Some output of 'shell' isn't compatible with the input 'table handlers' receive.
+	table_op is responsible for solving this incompatibility.
+
+stats.c stats.h:
+	Handles statistics of the program.
+
+shell.c:
+	Has the 'main' function of the program.
+	Receives and parses output from the user.
+
+table_types.h: structs and #defines regarding tables.
+boolean.h: contains the 'enum bool'

@@ -194,7 +194,7 @@ bool type_higher(void *value1, void *value2, TABLE_FIELD *field){
 }
 
 //Returns TRUE if value1 is equal to value2.
-//STRING comparison is case insensitive.
+//STRING comparison is not case sensitive.
 //CHAR comparison is case sensitive.
 bool type_equal(void *value1, void *value2, TABLE_FIELD *field){
 	if(field->fieldType == STRING)

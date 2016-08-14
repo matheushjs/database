@@ -5,8 +5,8 @@
 #include <table_op.h>
 #include <stats.h>
 
-//Comment below to ignore case on names of tables or table_fields.
-//#define ICASE
+//Comment below to ignore case on <names of tables> and <names of fields>.
+#define ICASE
 
 #ifdef ICASE
 #define CHK_CASE2(X, Y) to_lowercase(X), to_lowercase(Y)
@@ -38,31 +38,31 @@ TABLE_OP parse(char *cmd, char ***s, int *size){
 	//Extra parentheses to comply with gcc -Wall flag.
 	*size = 3;
 	if(( *s = reg_parse(cmd, "\\s*create\\s+table\\s+(\\w+)\\s*\\((.+)\\)\\s*;\\s*$", 3) )){
-		CHK_CASE2(s[1], s[2]);
+		CHK_CASE2((*s)[1], (*s)[2]);
 		return CREATE_TABLE;
 	}
 	if(( *s = reg_parse(cmd, "\\s*create\\s+index\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3) )){
-		CHK_CASE2(s[1], s[2]);
+		CHK_CASE2((*s)[1], (*s)[2]);
 		return INDEX_TABLE;
 	}
 	if(( *s = reg_parse(cmd, "\\s*sort\\s+(\\w+)\\s*\\((\\w+)\\)\\s*;\\s*$", 3) )){
-		CHK_CASE2(s[1], s[2]);
+		CHK_CASE2((*s)[1], (*s)[2]);
 		return SORT_TABLE;
 	}
 	
 	*size = 4;
 	if(( *s = reg_parse(cmd, "\\s*insert\\s+into\\s+(\\w+)\\s*\\((.+)\\)\\s*values\\s*\\((.+)\\)\\s*;\\s*$", 4) )){
-		CHK_CASE2(s[1], s[2]);
+		CHK_CASE2((*s)[1], (*s)[2]);
 		return INSERT_TABLE;
 	}
 	if(( *s = reg_parse(cmd, "\\s*select\\s+(\\w+)\\s+(\\w+)\\s+'\\s*(.*)\\s*'\\s*;\\s*$", 4) )){
-		CHK_CASE2(s[1], s[2]);
+		CHK_CASE2((*s)[1], (*s)[2]);
 		return SELECT_TABLE;
 	}
 	
 	*size = 2;
 	if(( *s = reg_parse(cmd, "\\s*print\\s+table\\s+(\\w+)\\s*;\\s*$", 2) )){
-		CHK_CASE(s[1]);
+		CHK_CASE((*s)[1]);
 		return PRINT_TABLE;
 	}
 	

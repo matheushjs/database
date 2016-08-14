@@ -1,17 +1,33 @@
-.dat:
+struct TABLE;
+struct TABLE_FIELD;
 
-<int fieldCounter = N><int rootSize><int recordSize>\
-<TABLE_FIELD[0]><TABLE_FIELD[1]><TABLE_FIELD[2]>...<TABLE_FIELD[N]>\
-<data[0][0]><data[0][1]>...<data[0][M]>\
-<data[1][0]><data[1][1]>...<data[1][M]>\
+Format of .dat:
+
+<TABLE.fieldCounter = N><TABLE.rootSize><TABLE.recordSize>\
+<TABLE_FIELD[0]><TABLE_FIELD[1]>...<TABLE_FIELD[N]>\
+<data[0][0]><data[0][1]>...<data[0][N]>\
+<data[1][0]><data[1][1]>...<data[1][N]>\
 .				.\
 .                               .\
 .                               .\
-<data[N][0]><data[N][1]>...<data[N][M]>
+<data[M][0]><data[M][1]>...<data[M][N]>
 
 
-.idx Consider we're indexing a table by name[80]
+Format of .tmp:
 
-<name[80] 81b><offset 4b><name[80] 81b><offset 4b>...
+<data[0][0]><data[0][1]>...<data[0][N]>\
+<data[1][0]><data[1][1]>...<data[1][N]>\
+.				.\
+.                               .\
+.                               .\
+<data[M][0]><data[M][1]>...<data[M][N]>
 
-offset will be the beginning point of the whole sequence of records that contains the indexed record.
+
+Format of .idx, sorted by field [X]:
+
+<DATA><offset 4b>\
+<DATA><offset 4b>\
+<DATA><offset 4b>\
+...
+
+'offset' being the beginning point of the whole sequence of records that contains the indexed record.
