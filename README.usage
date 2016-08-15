@@ -3,7 +3,7 @@ Commands accepted by this database:
 create table person (code int, name char[80], gender char);
 insert into person (name, gender, code) values ('Matheus', 'M', 1);
 create index person (name);
-select person code 1;
+select person code '1';
 sort person (code);
 print table pessoa;
 showalltables;

@@ -1,4 +1,3 @@
 On table_insert, validate if all existent fields were given a value.
 On table_index, validate it the given field exists
-define a better comparison functions for floats and doubles.
 get rid of global variables

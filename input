@@ -1,19 +1,19 @@
-cReAtE tAbLe PeSSoa (codigo int, nome cHaR[80], idade DoUbLe, sexo Char );
+cReAtE tAbLe PeSSoa (codigo int, nome cHaR[80], idade fLoAt, sexo Char );
 create table empresa (razaosocial char[255], endereco char[255], numero int, cidade char[80], estado char[2]);
 showalltables;
 insert into PeSSoa (codigo, nome, idade, sexo) values (1, 'joao da silva', 5.5, 'M');
-select PeSSoa codigo 1;
+select PeSSoa codigo '1';
 insert into PeSSoa (codigo, nome, idade, sexo) values (2, 'paula souza', 3.5, 'F');
-select PeSSoa codigo 2;
+select PeSSoa codigo '2';
 insert into PeSSoa (codigo, nome, idade, sexo) values (3, 'jose ricardo martins', 50.6, 'M');
 create index PeSSoa (codigo);
-select PeSSoa codigo 2;
+select PeSSoa codigo '2';
 insert into PeSSoa (codigo, nome, idade, sexo) values (3, 'joao manoel gaudi', 19.9, 'M');
 insert into PeSSoa (codigo, nome, idade, sexo) values (3, 'edvaldo junqueira', 123.5, 'M');
 insert into PeSSoa (codigo, nome, idade, sexo) values (3, 'nathan de souza', 122.5, 'M');
 insert into PeSSoa (codigo, nome, idade, sexo) values (3, 'bruno pereira neto', 44.0, 'M');
 create index PeSSoa (codigo);
-select PeSSoa codigo 3;
+select PeSSoa codigo '3';
 insert into empresa (razaosocial, endereco, numero, cidade, estado) values ('usp', 'av trabalhador saocarlense', 400, 'sao carlos', 'SP');
 insert into empresa (razaosocial, endereco, numero, cidade, estado) values ('empresa a', 'av sao carlos', 30, 'sao carlos', 'SP');
 insert into empresa (razaosocial, endereco, numero, cidade, estado) values ('empresa b', 'av xv', 132, 'araraquara', 'SP');
@@ -25,7 +25,7 @@ showallindexes
 statistics;
 insert into PeSSoa (codigo, nome, idade, sexo) values (4, 'carlos almeida', 6.212344, 'M');
 insert into PeSSoa (codigo, nome, idade, sexo) values (2, 'joaquim jose', 125.56, 'M');
-select PeSSoa codigo 1;
+select PeSSoa codigo '1';
 statistics
 insert into PeSSoa (codigo, nome, idade, sexo) values (15, 'amanda say', 72.72, 'F'); 
 sort PeSSoa(codigo);
@@ -33,4 +33,6 @@ sort PeSSoa(nome);
 statistics
 print table PeSSoa;
 print table empresa;
+select PeSSoa idade '72.72';
+statistics
 quit;

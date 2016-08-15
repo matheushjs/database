@@ -171,7 +171,7 @@ void record_print(void *record, TABLE *table){
 int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, void *value){
 	int lo, hi, cur, offset, nrecords, idx_rSize, nfound = 0;
 	void *data, *record;
-
+	
 	idx_rSize = field->dataSize + sizeof(int);
 	nrecords = file_size(idx_fp) / idx_rSize;
 	if(!nrecords) return 0;
@@ -228,18 +228,17 @@ int idx_select(TABLE *table, TABLE_FIELD *field, FILE *idx_fp, FILE *dat_fp, voi
 
 //Select procedure upon .dat and .tmp files.
 //Returns the number of matched records.
-int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *value_bytes){
+int file_select(TABLE *table, TABLE_FIELD *field, FILE *fp, int init, void *value){
 	int i, offset, field_init, nrecords, count = 0;	
 	void *data = malloc(table->recordSize);
 
 	field_init = field_offset(table, (char *) field->name);
 	nrecords = (file_size(fp) - init) / table->recordSize;
-
 	for(i = 0; i < nrecords; i++){
 		offset = init + i*table->recordSize;
 		fseek(fp, offset+field_init, SEEK_SET);
 		fread(data, field->dataSize, 1, fp);
-		if(type_equal(data, value_bytes, field)){
+		if(type_equal(data, value, field)){
 			fseek(fp, offset, SEEK_SET);
 			fread(data, table->recordSize, 1, fp);
 			count++;

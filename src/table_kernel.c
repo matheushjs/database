@@ -1,9 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <utils.h>
 #include <table_types.h>
 #include <boolean.h>
+
+#define FEPSILON 1E-3
+#define DEPSILON 1E-9	//tolerance values for double/float comparison.
 
 //Returns the size of a single record within a file.
 int table_record_size(TABLE *table){
@@ -178,17 +182,17 @@ void tmp_to_dat(char *tableName){
 bool type_higher(void *value1, void *value2, TABLE_FIELD *field){
 	switch(field->fieldType){
 		case INT:
-			return *(int *) value1 > *(int *) value2 ? TRUE : FALSE;
+			return *(int*)value1 > *(int*)value2 ? TRUE : FALSE;
 		case FLOAT:
-			return *(float *) value1 > *(float *) value2 ? TRUE : FALSE;
+			return (*(float*)value1 - *(float*)value2) > FEPSILON ? TRUE : FALSE;
 		case DOUBLE:
-			return *(double *) value1 > *(double *) value2 ? TRUE : FALSE;
+			return (*(double*)value1 - *(double*)value2) > DEPSILON ? TRUE : FALSE;
 		case CHAR:
-			return *(char *) value1 > *(char *) value2 ? TRUE : FALSE;
+			return *(char*)value1 > *(char*)value2 ? TRUE : FALSE;
 		case STRING:
-			return strcmp((char *) value1, (char *) value2) > 0 ? TRUE : FALSE;
+			return strcmp((char*)value1, (char*)value2) > 0 ? TRUE : FALSE;
 		default:
-			printf("Invalid fieldType in the field passed as argument.\n");
+			fprintf(stderr, "Invalid fieldType in the field passed as argument.\n");
 			return FALSE;
 	}
 }
@@ -197,9 +201,21 @@ bool type_higher(void *value1, void *value2, TABLE_FIELD *field){
 //STRING comparison is not case sensitive.
 //CHAR comparison is case sensitive.
 bool type_equal(void *value1, void *value2, TABLE_FIELD *field){
-	if(field->fieldType == STRING)
-		return icase_strcmp((char *) value1, (char *) value2);
-	return memcmp(value1, value2, field->dataSize) == 0 ? TRUE : FALSE;
+	switch(field->fieldType){
+		case STRING:
+			return icase_strcmp((char *) value1, (char *) value2);
+		case FLOAT:
+			return fabs(*(float*)value1 - *(float*)value2) <= FEPSILON ? TRUE : FALSE;
+		case DOUBLE:
+			return fabs(*(double*)value1 - *(double*)value2) <= DEPSILON ? TRUE : FALSE;
+		case CHAR:
+			return *(char*) value1 == *(char*)value2 ? TRUE : FALSE;
+		case INT:
+			return *(int*)value1 == *(int*)value2 ? TRUE : FALSE;
+		default:
+			fprintf(stderr, "Invalid fieldType in the field passed as argument.\n");
+			return FALSE;
+	}
 }
 
 //Prints 'value' based on its type.
