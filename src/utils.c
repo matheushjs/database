@@ -189,7 +189,7 @@ bool icase_strcmp(char *s, char *t){
 
 //Terminates program after printing error messages.
 void die(const char *message){
-	fprintf(stderr, message);
+	fprintf(stderr, "%s", message);
 	perror("ERROR:");
 	exit(0);
 }
