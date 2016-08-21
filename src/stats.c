@@ -2,20 +2,28 @@
 #include <string.h>
 #include <stats.h>
 
-struct STATS stats;
+static int stats[STATS_ENUMCOUNT];
 
-void stats_set(){
-	memset(&stats, 0, sizeof(stats));
+void stats_reset(){
+	memset(stats, 0, sizeof(stats));
+}
+
+void stats_inc(enum STATS_T s){
+	stats[s]++;
+}
+
+void stats_set(int value, enum STATS_T s){
+	stats[s] = value;
 }
 
 void stats_print(){
-	printf("#Tables: %d\n", stats.nTables);
-	printf("#Indexes: %d\n", stats.nIndexes);
-	printf("#Inserts: %d\n", stats.nInserts);
-	printf("#Selects: %d\n", stats.nSelects);
-	printf("#Sorts: %d\n", stats.nSorts);
-	printf("#ShowAllTables: %d\n", stats.nSAT);
-	printf("#ShowAllIndexes: %d\n", stats.nSAI);
-	printf("#Records in last select (binary search): %d\n", stats.nLBR);
-	printf("#Records in last select (sequential search): %d\n", stats.nLSR);
+	printf("#Tables: %d\n", stats[STATS_NTABLES]);
+	printf("#Indexes: %d\n", stats[STATS_NINDEXES]);
+	printf("#Inserts: %d\n", stats[STATS_NINSERTS]);
+	printf("#Selects: %d\n", stats[STATS_NSELECTS]);
+	printf("#Sorts: %d\n", stats[STATS_NSORTS]);
+	printf("#ShowAllTables: %d\n", stats[STATS_NSAT]);
+	printf("#ShowAllIndexes: %d\n", stats[STATS_NSAI]);
+	printf("#Records in last select (binary search): %d\n", stats[STATS_NLBR]);
+	printf("#Records in last select (sequential search): %d\n", stats[STATS_NLSR]);
 }

@@ -90,7 +90,7 @@ void shell(FILE *stream){
 			case CREATE_TABLE:
 				shell_table_create(s[1], s[2]);
 				alltables_add(s[1]);
-				stats.nTables++;
+				stats_inc(STATS_NTABLES);
 				break;
 			
 			case INSERT_TABLE:
@@ -98,9 +98,9 @@ void shell(FILE *stream){
 				break;
 
 			case INDEX_TABLE:
-				stats.nIndexes++;
 				table_index(s[1], s[2]);
 				table_index_sort(s[1], s[2]);
+				stats_inc(STATS_NINDEXES);
 				break;
 
 			case SELECT_TABLE:
@@ -108,9 +108,9 @@ void shell(FILE *stream){
 				break;
 
 			case SORT_TABLE:
-				stats.nSorts++;
 				table_index(s[1], s[2]);
 				table_index_sort(s[1], s[2]);
+				stats_inc(STATS_NSORTS);
 				break;
 				
 			case PRINT_TABLE:
@@ -146,7 +146,7 @@ void shell(FILE *stream){
 int main(int argc, char *argv[]){
 	FILE *fp;
 	char filename[51];
-	stats_set();
+	stats_reset();
 	scanf("%s", filename);
 	fp = fopen(filename, "r");
 	if(!fp) die("Unable to open file.\n");

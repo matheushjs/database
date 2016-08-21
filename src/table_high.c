@@ -36,7 +36,7 @@ void table_insert(char *tableName, char **fieldNames, void **values){
 	TABLE *table = table_from_file(tableName);
 	TABLE_FIELD *curr_field;
 
-	stats.nInserts++;
+	stats_inc(STATS_NINSERTS);
 
 	fileName = append_string(tableName, ".tmp");
 	fp = fopen(fileName, "r+");
@@ -257,7 +257,7 @@ int table_select_records(char *tableName, char *fieldName, char *value){
 	char *idx_file, *dat_file, *tmp_file;
 	FILE *fp, *dat_fp;
 
-	stats.nSelects++;
+	stats_inc(STATS_NSELECTS);
 
 	//Prepare table and field.
 	TABLE *table = table_from_file(tableName);
@@ -288,8 +288,8 @@ int table_select_records(char *tableName, char *fieldName, char *value){
 	if(fp) seq_count += file_select(table, field, fp, 0, value);
 	if(!(seq_count|bin_count)) printf("null\n");
 
-	stats.nLSR = seq_count;
-	stats.nLBR = bin_count;
+	stats_set(seq_count, STATS_NLSR);
+	stats_set(bin_count, STATS_NLBR);
 
 	free(field);
 	fclose(fp);
@@ -375,7 +375,7 @@ void alltables_print(){
 	int i;
 	TABLE *table;
 	
-	stats.nSAT++;	//nShow All Tables
+	stats_inc(STATS_NSAT);	//nShow All Tables
 
 	if(!fp){
 		printf("There are no tables.");
@@ -397,7 +397,7 @@ void allindexes_print(){
 	char string[MAX_NAME_SIZE];
 	int i;
 	
-	stats.nSAI++;	//nShow All Indexes
+	stats_inc(STATS_NSAI);	//nShow All Indexes
 
 	if(!fp){
 		printf("There are no indexes.");
