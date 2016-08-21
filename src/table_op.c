@@ -123,7 +123,7 @@ void shell_table_create(char *tablename, char *params){
 void shell_table_insert(char *tablename, char *fields_string, char *values_string){
 	int countf, countv;
 	char **fields, **values_sp;
-	void **values;
+	void **values = NULL;
 	
 	fields = insert_parse_op(fields_string, &countf);
 	values_sp = insert_parse_op(values_string, &countv);

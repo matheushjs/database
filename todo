@@ -1,3 +1,3 @@
 On table_insert, validate if all existent fields were given a value.
 On table_index, validate it the given field exists
-get rid of global variables
+Make it so that unindexed fields can be 'selected' correctly, without ignoring any records.
